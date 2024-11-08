@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sync"
 )
 
@@ -32,7 +32,7 @@ func NewJSONSecretProvider(filePath string) (*JSONSecretProvider, error) {
 func (sp *JSONSecretProvider) loadSecrets() error {
 	sp.mu.Lock()
 	defer sp.mu.Unlock()
-	data, err := ioutil.ReadFile(sp.filePath)
+	data, err := os.ReadFile(sp.filePath)
 	if err != nil {
 		return fmt.Errorf("error reading file: %v", err)
 	}

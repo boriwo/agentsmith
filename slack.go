@@ -14,20 +14,23 @@ import (
 )
 
 type SlackAgent struct {
+	client *slack.Client
+	sp     SecretProvider
+	ap     AnswerProvider
 }
 
-func NewSlackAgent() *SlackAgent {
-	return new(SlackAgent)
+func NewSlackAgent(sp SecretProvider, ap AnswerProvider) *SlackAgent {
+	sa := SlackAgent{
+		sp: sp,
+		ap: ap,
+	}
+	return &sa
 }
 
 func (sa *SlackAgent) LaunchSlack() {
-	provider, err := NewJSONSecretProvider("secrets.json")
-	if err != nil {
-		log.Fatalf("Error creating secret provider: %v", err)
-	}
-	client := slack.New(provider.GetSecret("slackOauthToken"), slack.OptionDebug(true), slack.OptionAppLevelToken(provider.GetSecret("slackAppToken")))
+	sa.client = slack.New(sa.sp.GetSecret("slackOauthToken"), slack.OptionDebug(true), slack.OptionAppLevelToken(sa.sp.GetSecret("slackAppToken")))
 	socketClient := socketmode.New(
-		client,
+		sa.client,
 		socketmode.OptionDebug(true),
 		socketmode.OptionLog(log.New(os.Stdout, "socketmode: ", log.Lshortfile|log.LstdFlags)),
 	)
@@ -55,8 +58,10 @@ func (sa *SlackAgent) LaunchSlack() {
 				}
 			}
 		}
-	}(ctx, client, socketClient)
+	}(ctx, sa.client, socketClient)
+	sa.postAttachment("Bot Message", "agent launched")
 	socketClient.Run()
+	sa.postAttachment("Bot Message", "agent stopped")
 }
 
 func (sa *SlackAgent) handleEventMessage(event slackevents.EventsAPIEvent, client *slack.Client) error {
@@ -81,27 +86,21 @@ func (sa *SlackAgent) handleAppMentionEventToBot(event *slackevents.AppMentionEv
 	if err != nil {
 		return err
 	}
-	text := strings.ToLower(event.Text)
-	attachment := slack.Attachment{}
-	if strings.Contains(text, "hello") || strings.Contains(text, "hi") {
-		attachment.Text = fmt.Sprintf("Hello %s", user.RealName)
+	question := NewQuestion(strings.ToLower(event.Text))
+	answers := sa.ap.GetAnswers(NewUser(user.ID, user.Name, user.RealName), question)
+	for _, a := range answers {
+		attachment := slack.Attachment{}
+		attachment.Text = a.Text
 		attachment.Color = "#4af030"
-	} else if strings.Contains(text, "bye") {
-		attachment.Text = fmt.Sprintf("Good bye %s", user.RealName)
-		attachment.Color = "#4af030"
-	} else {
-		attachment.Text = fmt.Sprintf("Sorry, I don't have the answers yet, %s", user.RealName)
-		attachment.Color = "#4af030"
-	}
-	_, _, err = client.PostMessage(event.Channel, slack.MsgOptionAttachments(attachment))
-	if err != nil {
-		return fmt.Errorf("failed to post message: %w", err)
+		_, _, err = client.PostMessage(event.Channel, slack.MsgOptionAttachments(attachment))
+		if err != nil {
+			return fmt.Errorf("failed to post message: %w", err)
+		}
 	}
 	return nil
 }
 
-func (sa *SlackAgent) postAttachment(sp SecretProvider, pretext, text string) error {
-	client := slack.New(sp.GetSecret("slackOauthToken"), slack.OptionDebug(true))
+func (sa *SlackAgent) postAttachment(pretext, text string) error {
 	attachment := slack.Attachment{
 		Pretext: pretext,
 		Text:    text,
@@ -113,8 +112,8 @@ func (sa *SlackAgent) postAttachment(sp SecretProvider, pretext, text string) er
 			},
 		},*/
 	}
-	_, _, err := client.PostMessage(
-		sp.GetSecret("slackChannelId"),
+	_, _, err := sa.client.PostMessage(
+		sa.sp.GetSecret("slackChannelId"),
 		slack.MsgOptionAttachments(attachment),
 	)
 	if err != nil {
