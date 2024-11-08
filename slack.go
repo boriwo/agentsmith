@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -14,21 +13,23 @@ import (
 )
 
 type SlackAgent struct {
-	client *slack.Client
-	sp     SecretProvider
-	ap     AnswerProvider
+	client         *slack.Client
+	secretProvider SecretProvider
+	answerProvider AnswerProvider
+	sessionMgr     SessionManager
 }
 
-func NewSlackAgent(sp SecretProvider, ap AnswerProvider) *SlackAgent {
+func NewSlackAgent(secretProvider SecretProvider, answerProvider AnswerProvider, sessionManager SessionManager) *SlackAgent {
 	sa := SlackAgent{
-		sp: sp,
-		ap: ap,
+		secretProvider: secretProvider,
+		answerProvider: answerProvider,
+		sessionMgr:     sessionManager,
 	}
 	return &sa
 }
 
-func (sa *SlackAgent) LaunchSlack() {
-	sa.client = slack.New(sa.sp.GetSecret("slackOauthToken"), slack.OptionDebug(true), slack.OptionAppLevelToken(sa.sp.GetSecret("slackAppToken")))
+func (sa *SlackAgent) LaunchAgent() {
+	sa.client = slack.New(sa.secretProvider.GetSecret("slackOauthToken"), slack.OptionDebug(true), slack.OptionAppLevelToken(sa.secretProvider.GetSecret("slackAppToken")))
 	socketClient := socketmode.New(
 		sa.client,
 		socketmode.OptionDebug(true),
@@ -82,12 +83,14 @@ func (sa *SlackAgent) handleEventMessage(event slackevents.EventsAPIEvent, clien
 }
 
 func (sa *SlackAgent) handleAppMentionEventToBot(event *slackevents.AppMentionEvent, client *slack.Client) error {
-	user, err := client.GetUserInfo(event.User)
+	slackUser, err := client.GetUserInfo(event.User)
 	if err != nil {
 		return err
 	}
-	question := NewQuestion(strings.ToLower(event.Text))
-	answers := sa.ap.GetAnswers(NewUser(user.ID, user.Name, user.RealName), question)
+	user := NewUser(slackUser.ID, slackUser.Name, slackUser.RealName)
+	session := sa.sessionMgr.GetSession(user)
+	question := NewQuestion(event.Text)
+	answers := sa.answerProvider.GetAnswers(session, question)
 	for _, a := range answers {
 		attachment := slack.Attachment{}
 		attachment.Text = a.Text
@@ -113,7 +116,7 @@ func (sa *SlackAgent) postAttachment(pretext, text string) error {
 		},*/
 	}
 	_, _, err := sa.client.PostMessage(
-		sa.sp.GetSecret("slackChannelId"),
+		sa.secretProvider.GetSecret("slackChannelId"),
 		slack.MsgOptionAttachments(attachment),
 	)
 	if err != nil {

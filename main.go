@@ -4,13 +4,23 @@ import (
 	"log"
 )
 
+var (
+	agent Agent
+)
+
 func main() {
 	var err error
-	sp, err := NewJSONSecretProvider("secrets.json")
+	sessionMgr := NewSimpleSessionManager()
+	kb := NewFileKnowledgeBase("kb")
+	err = kb.Load()
 	if err != nil {
-		log.Fatalf("Error creating secret provider: %v", err)
+		log.Fatalf("faild to load knowledge base: %v", err)
 	}
-	ap := NewSimpleAnswerProvider()
-	sa := NewSlackAgent(sp, ap)
-	sa.LaunchSlack()
+	secretProvider, err := NewJSONSecretProvider("secrets.json")
+	if err != nil {
+		log.Fatalf("faild to create secret provider: %v", err)
+	}
+	answerProvider := NewStatefulAnswerProvider(kb)
+	agent = NewSlackAgent(secretProvider, answerProvider, sessionMgr)
+	agent.LaunchAgent()
 }

@@ -12,14 +12,18 @@ func NewSimpleAnswerProvider() AnswerProvider {
 	return new(SimpleAnswerProvider)
 }
 
-func (sap *SimpleAnswerProvider) GetAnswers(user *User, question *Question) []*Answer {
-	a := new(Answer)
+func (sap *SimpleAnswerProvider) GetAnswers(session *UserSession, question *Question) []*Answer {
+	answer := new(Answer)
 	if strings.Contains(question.Text, "hello") || strings.Contains(question.Text, "hi") {
-		a.Text = fmt.Sprintf("Hello %s", user.RealName)
+		answer.Text = fmt.Sprintf("Hello %s", session.User.RealName)
 	} else if strings.Contains(question.Text, "bye") {
-		a.Text = fmt.Sprintf("Good bye %s", user.RealName)
+		answer.Text = fmt.Sprintf("Good bye %s", session.User.RealName)
 	} else {
-		a.Text = fmt.Sprintf("Sorry, I don't have the answers yet, %s", user.RealName)
+		answer.Text = fmt.Sprintf("Sorry, I don't have the answers yet, %s", session.User.RealName)
 	}
-	return []*Answer{a}
+	answers := []*Answer{answer}
+	session.LastQuestion = question
+	session.LastAnswer = answers
+	session.State = STATE_QA
+	return answers
 }

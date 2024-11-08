@@ -1,0 +1,90 @@
+[
+    {
+        "name": "RELEASE",
+        "question": "When was Star Wars released originally?",
+        "labels": [ "release" ],
+        "answers": [ "The first Star Wars film, originally titled Star Wars, was released in 1977 and later retitled Episode IV: A New Hope." ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "TRILOGIES",
+        "question": "What are the episodes in the trilogy?",
+        "labels": [ "trilogies" ],
+        "answers": [ 
+            "The saga consists of three main trilogies",
+            "Original Trilogy: A New Hope (1977), The Empire Strikes Back (1980), Return of the Jedi (1983).",
+            "Prequel Trilogy: The Phantom Menace (1999), Attack of the Clones (2002), Revenge of the Sith (2005).",
+            "Sequel Trilogy: The Force Awakens (2015), The Last Jedi (2017), The Rise of Skywalker (2019)."
+        ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "THE_FORCE",
+        "question": "What is the force?",
+        "labels": [ "force" ],
+        "answers": [ "Central to the saga, the Force is an energy field created by all living things, which can be harnessed by those who are Force-sensitive, primarily the Jedi and Sith." ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "JEDI_VS_SITH",
+        "question": "The Jedi are peacekeepers who use the light side of the Force, while the Sith embrace the dark side, typically characterized by anger and aggression.",
+        "labels": [ "jedi", "sith" ],
+        "answers": [],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "ICONIC_CHARACTERS",
+        "question": "What are the most important characters?",
+        "labels": [ "characters" ],
+        "answers": [ "Key characters include Luke Skywalker, Princess Leia, Han Solo, Darth Vader, Yoda, and Obi-Wan Kenobi." ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "LIGHTSABERS",
+        "question": "What are lightsabers?",
+        "labels": [ "lightsaber" ],
+        "answers": [ "These are the signature weapons of the Jedi and Sith, consisting of a plasma blade powered by a kyber crystal." ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "DEATH_STAR",
+        "question": "What is the Death Star?",
+        "labels": [ "death star"],
+        "answers": [ "A massive space station capable of destroying entire planets, it is one of the most recognizable symbols of the Galactic Empire." ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "DROIDS",
+        "question": "What are droids?",
+        "labels": [ "droids" ],
+        "answers": [ "Robots play a significant role in the series, with C-3PO and R2-D2 being two of the most beloved droids." ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "SETTING",
+        "question": "Where does Star Wars take place?",
+        "labels": [ "setting" ],
+        "answers": [ "The story takes place 'a long time ago in a galaxy far, far away,' featuring a variety of planets and species." ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "CULTURAL_IMPACT",
+        "question": "What is the cultural impact of the series?",
+        "labels": [ "culture" ],
+        "answers": [ "Star Wars has become a cultural phenomenon, influencing countless films, television shows, books, and merchandise since its inception." ],
+        "links": [],
+        "createdBy": "boris"
+    }
+]
+
+
+
