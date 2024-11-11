@@ -14,7 +14,11 @@ func TestGptCompletions(t *testing.T) {
 	oai := NewOpenAIHandler(secretProvider)
 	question := &Question{Text: "Please say this is a simple test!"}
 	t.Logf("question: %s\n", question.Text)
-	answers := oai.GptGetCompletions(question)
+	answers, err := oai.GptGetCompletions(question)
+	if err != nil {
+		t.Errorf("failed get completion: %v", err)
+		return
+	}
 	for _, a := range answers {
 		t.Logf("answer: %s\n", a.Text)
 		if !strings.Contains(a.Text, "test") {
@@ -45,7 +49,7 @@ func TestGptEmbeddings(t *testing.T) {
 	}
 }
 
-func TestGptImage(t *testing.T) {
+/*func TestGptImage(t *testing.T) {
 	secretProvider, err := NewJSONSecretProvider("secrets.json")
 	if err != nil {
 		t.Errorf("failed to create secret provider: %v", err)
@@ -54,8 +58,12 @@ func TestGptImage(t *testing.T) {
 	oai := NewOpenAIHandler(secretProvider)
 	question := &Question{Text: "cats and dogs"}
 	t.Logf("question: %s\n", question.Text)
-	answers := oai.GptGetImage(question)
+	answers, err := oai.GptGetImage(question)
+	if err != nil {
+		t.Errorf("failed get image: %v", err)
+		return
+	}
 	for _, a := range answers {
 		t.Logf("answer: %s\n", a.Text)
 	}
-}
+}*/

@@ -1,6 +1,9 @@
 package main
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 type EmbeddingAnswerProvider struct {
 	kb  KnowledeBaseProvider
@@ -25,7 +28,6 @@ func (sap *EmbeddingAnswerProvider) GetAnswers(session *UserSession, question *Q
 	if err != nil {
 		return nil, err
 	}
-	//TODO: check if answer plausible
 	ranking, err := sap.eb.RankEmbeddings(embedding)
 	if err != nil {
 		return nil, err
@@ -43,8 +45,21 @@ func (sap *EmbeddingAnswerProvider) GetAnswers(session *UserSession, question *Q
 			return nil, err
 		}
 	} else {
+		plausabilityPrompt := ""
+		plausabilityPrompt += "Please check if the following answer is a plausible answer to the give question. Answer simply with yes or no.\n"
+		plausabilityPrompt += "Question:\n" + question.Text + "\n"
+		plausabilityPrompt += "Answer:\n"
 		for _, a := range fact.Answers {
 			answers = append(answers, &Answer{a, 0, 0})
+			plausabilityPrompt += a + "\n"
+		}
+		plausabilityAnswers, err := sap.oai.GptGetCompletions(&Question{plausabilityPrompt})
+		if err != nil {
+			return nil, err
+		}
+		// answer deemed no plausible
+		if len(plausabilityAnswers) == 1 && strings.ToLower(plausabilityAnswers[0].Text) == "no" {
+			answers = make([]*Answer, 0)
 		}
 	}
 	session.LastQuestion = question

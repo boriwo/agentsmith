@@ -1,5 +1,50 @@
 [
     {
+        "name": "RLISTFACTS",
+        "question": "List all facts in the knowledge base!",
+        "labels": [ "rlistfacts" ],
+        "answers": [],
+        "links": [],
+        "plugin": "COMMAND_PLUGIN",
+        "params": [
+            {
+                "type": "constant",
+                "value": "rlistfacts"
+            }
+        ],
+        "createdBy": "boris"
+    },
+    {
+        "name": "RNUMFACTS",
+        "question": "Get the number of all facts in the knowledge base!",
+        "labels": [ "rnumfacts" ],
+        "answers": [],
+        "links": [],
+        "plugin": "COMMAND_PLUGIN",
+        "params": [
+            {
+                "type": "constant",
+                "value": "rnumfacts"
+            }
+        ],
+        "createdBy": "boris"
+    },
+    {
+        "name": "RGETFACT",
+        "question": "Get a fact by name from the knowledge base!",
+        "labels": [ "rgetfact" ],
+        "answers": [],
+        "links": [],
+        "plugin": "COMMAND_PLUGIN",
+        "params": [
+            {
+                "type": "constant",
+                "value": "rgetfact"
+            }
+        ],
+        "createdBy": "boris"
+    },
+    {
         "name": "RELEASE",
         "question": "When was Star Wars released originally?",
         "labels": [ "release" ],
@@ -30,9 +75,9 @@
     },
     {
         "name": "JEDI_VS_SITH",
-        "question": "The Jedi are peacekeepers who use the light side of the Force, while the Sith embrace the dark side, typically characterized by anger and aggression.",
+        "question": "Who are the Jedi and the Sith?",
         "labels": [ "jedi", "sith" ],
-        "answers": [],
+        "answers": [ "The Jedi are peacekeepers who use the light side of the Force, while the Sith embrace the dark side, typically characterized by anger and aggression." ],
         "links": [],
         "createdBy": "boris"
     },

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 )
@@ -140,7 +139,7 @@ func (h *OpenAIHandler) getHttp(url string, reqObj interface{}) ([]byte, error) 
 	return body, nil
 }
 
-func (h *OpenAIHandler) GptGetCompletions(question *Question) []*Answer {
+func (h *OpenAIHandler) GptGetCompletions(question *Question) ([]*Answer, error) {
 	a := new(Answer)
 	reqObj := GptCompletionsRequest{
 		Model: GPT_CURRENT_MODEL,
@@ -153,23 +152,18 @@ func (h *OpenAIHandler) GptGetCompletions(question *Question) []*Answer {
 	}
 	body, err := h.getHttp(OPEN_AI_COMPLETIONS_URL, reqObj)
 	if err != nil {
-		a.Text = fmt.Sprintf("gpt completions error: %s", err.Error())
-		return []*Answer{a}
+		return nil, err
 	}
 	var respObj GptCompletionsResponse
 	err = json.Unmarshal(body, &respObj)
 	if err != nil {
-		a.Text = fmt.Sprintf("gpt completions error: %s", err.Error())
-		return []*Answer{a}
+		return nil, err
 	}
 	if respObj.Error != nil {
-		a.Text = fmt.Sprintf("gpt completions error: %s", respObj.Error.Message)
-		return []*Answer{a}
+		return nil, err
 	}
 	if len(respObj.Choices) == 0 {
-		a.Text = "no completion for you"
-		return []*Answer{a}
-
+		return nil, errors.New("no completion for you")
 	}
 	answers := []*Answer{}
 	for _, r := range respObj.Choices {
@@ -177,7 +171,7 @@ func (h *OpenAIHandler) GptGetCompletions(question *Question) []*Answer {
 		answers = append(answers, a)
 		a = new(Answer)
 	}
-	return answers
+	return answers, nil
 }
 
 func (h *OpenAIHandler) GptGetEmbedding(question *Question) (*Embedding, error) {
@@ -201,7 +195,7 @@ func (h *OpenAIHandler) GptGetEmbedding(question *Question) (*Embedding, error) 
 	return NewEmbedding("", question.Text, "", GPT_CURRENT_MODEL).WithEmbedding(respObj.Data[0].Embedding), nil
 }
 
-func (h *OpenAIHandler) GptGetImage(question *Question) []*Answer {
+func (h *OpenAIHandler) GptGetImage(question *Question) ([]*Answer, error) {
 	a := new(Answer)
 	reqObj := GptImageRequest{
 		GPT_MODEL_DALL_E_3,
@@ -211,24 +205,19 @@ func (h *OpenAIHandler) GptGetImage(question *Question) []*Answer {
 	}
 	body, err := h.getHttp(OPEN_AI_IMAGES_URL, reqObj)
 	if err != nil {
-		a.Text = fmt.Sprintf("gpt image error: %s", err.Error())
-		return []*Answer{a}
+		return nil, err
 	}
 	var respObj GptImageResponse
 	err = json.Unmarshal(body, &respObj)
 	if err != nil {
-		a.Text = fmt.Sprintf("gpt image error: %s", err.Error())
-		return []*Answer{a}
+		return nil, err
 	}
 	if respObj.Error != nil && respObj.Error.Message != "" {
-		a.Text = fmt.Sprintf("gpt image error: %s", respObj.Error.Message)
-		return []*Answer{a}
+		return nil, errors.New(respObj.Error.Message)
 	}
 	if len(respObj.Data) == 0 {
-		a.Text = "no image for you"
-		return []*Answer{a}
-
+		return nil, errors.New("no image for you")
 	}
 	a.Text = respObj.Data[0].URL
-	return []*Answer{a}
+	return []*Answer{a}, nil
 }
