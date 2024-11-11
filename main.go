@@ -4,6 +4,11 @@ import (
 	"log"
 )
 
+const (
+	DEFAULT_KNOWLEDGE_BASE_NAME = "kb"
+	DEFAULT_EMBEDDING_BASE_NAME = "embeddings"
+)
+
 var (
 	agent Agent
 )
@@ -11,7 +16,7 @@ var (
 func main() {
 	var err error
 	sessionMgr := NewSimpleSessionManager()
-	kb := NewFileKnowledgeBase("kb")
+	kb := NewFileKnowledgeBase(DEFAULT_KNOWLEDGE_BASE_NAME)
 	err = kb.Load()
 	if err != nil {
 		log.Fatalf("faild to load knowledge base: %v", err)
@@ -20,7 +25,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("faild to create secret provider: %v", err)
 	}
-	answerProvider := NewStatefulAnswerProvider(kb)
+	openaiHandler := NewOpenAIHandler(secretProvider)
+	eb := NewEmbeddingBase(secretProvider, *openaiHandler, DEFAULT_EMBEDDING_BASE_NAME)
+	err = eb.Load()
+	if err != nil {
+		log.Fatalf("faild to load embeddings base: %v", err)
+	}
+	err = eb.SyncEmbeddings(kb)
+	if err != nil {
+		log.Fatalf("faild to synchronize embeddings base: %v", err)
+	}
+	answerProvider := NewStatefulAnswerProvider(kb, eb)
 	agent = NewSlackAgent(secretProvider, answerProvider, sessionMgr)
 	agent.LaunchAgent()
 }

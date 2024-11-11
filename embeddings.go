@@ -3,16 +3,24 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"math"
 	"os"
 	"sort"
 )
 
-const ()
+type EmbeddingsBaseProvider interface {
+	Save() error
+	Load() error
+	SyncEmbeddings(kb KnowledeBaseProvider) error
+	RankEmbeddings(q *Embedding) (*EmbeddingsRanking, error)
+}
 
 type EmbeddingsBase struct {
-	Name               string
-	EmbeddingsByFactId map[string]*Embedding
+	name                 string
+	embeddingsByFactName map[string]*Embedding
+	secretProvider       SecretProvider
+	openaiHandler        OpenAIHandler
 }
 
 type EmbeddingsRanking struct {
@@ -21,7 +29,7 @@ type EmbeddingsRanking struct {
 }
 
 type Embedding struct {
-	FactId        string    `json:"factId"`
+	FactName      string    `json:"factId"`
 	Source        string    `json:"source"`
 	Link          string    `json:"link"`
 	ModelId       string    `json:"modelId"`
@@ -30,12 +38,12 @@ type Embedding struct {
 	Relevance     float64   `json:"relevance"`
 }
 
-func NewEmbedding(FactId, Source, Link, ModelId string) *Embedding {
+func NewEmbedding(FactName, Source, Link, ModelId string) *Embedding {
 	return &Embedding{
-		FactId:  FactId,
-		Source:  Source,
-		Link:    Link,
-		ModelId: ModelId,
+		FactName: FactName,
+		Source:   Source,
+		Link:     Link,
+		ModelId:  ModelId,
 	}
 }
 
@@ -45,10 +53,12 @@ func (e *Embedding) WithEmbedding(vector []float64) *Embedding {
 	return e
 }
 
-func NewEmbeddingBase(name string) *EmbeddingsBase {
+func NewEmbeddingBase(secretProvider SecretProvider, openaiHandler OpenAIHandler, name string) EmbeddingsBaseProvider {
 	return &EmbeddingsBase{
-		EmbeddingsByFactId: make(map[string]*Embedding),
-		Name:               name,
+		embeddingsByFactName: make(map[string]*Embedding),
+		secretProvider:       secretProvider,
+		openaiHandler:        openaiHandler,
+		name:                 name,
 	}
 }
 
@@ -80,9 +90,24 @@ func (e *Embedding) VecLen() (float64, error) {
 	return math.Sqrt(p), nil
 }
 
+func (e *Embedding) UpdateEmbedding(openaiHandler OpenAIHandler) error {
+	if e.Source == "" {
+		return errors.New("no source to embed")
+	}
+	log.Printf("updating embedding: %s\n", e.Source)
+	newEmbedding, err := openaiHandler.GptGetEmbedding(&Question{e.Source})
+	if err != nil {
+		return err
+	}
+	e.Embedding = newEmbedding.Embedding
+	e.NumDimensions = newEmbedding.NumDimensions
+	e.ModelId = ""
+	return nil
+}
+
 func (e *Embedding) Clone() *Embedding {
 	return &Embedding{
-		FactId:        e.FactId,
+		FactName:      e.FactName,
 		Source:        e.Source,
 		Link:          e.Link,
 		ModelId:       e.ModelId,
@@ -92,15 +117,15 @@ func (e *Embedding) Clone() *Embedding {
 	}
 }
 
-func (eb *EmbeddingsBase) StoreToDisk() error {
-	a := make([]*Embedding, len(eb.EmbeddingsByFactId))
+func (eb *EmbeddingsBase) Save() error {
+	a := make([]*Embedding, len(eb.embeddingsByFactName))
 	idx := 0
-	for _, e := range eb.EmbeddingsByFactId {
+	for _, e := range eb.embeddingsByFactName {
 		a[idx] = e
 		idx++
 	}
 	sort.SliceStable(a, func(i, j int) bool {
-		if a[i].FactId < a[j].FactId {
+		if a[i].FactName < a[j].FactName {
 			return true
 		} else {
 			return false
@@ -110,15 +135,15 @@ func (eb *EmbeddingsBase) StoreToDisk() error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(eb.Name+".json", buf, 0644)
+	err = os.WriteFile(eb.name+".json", buf, 0644)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (eb *EmbeddingsBase) LoadFromDisk() error {
-	data, err := os.ReadFile(eb.Name + ".json")
+func (eb *EmbeddingsBase) Load() error {
+	data, err := os.ReadFile(eb.name + ".json")
 	if err != nil {
 		return err
 	}
@@ -127,21 +152,13 @@ func (eb *EmbeddingsBase) LoadFromDisk() error {
 	if err != nil {
 		return err
 	}
-	eb.EmbeddingsByFactId = make(map[string]*Embedding, 0)
+	eb.embeddingsByFactName = make(map[string]*Embedding, 0)
 	for _, e := range a {
-		if e.FactId == "" {
+		if e.FactName == "" {
 			return errors.New("invalid fact")
 		}
-		eb.EmbeddingsByFactId[e.FactId] = e
+		eb.embeddingsByFactName[e.FactName] = e
 	}
-	return nil
-}
-
-func (e *Embedding) UpdateVector() error {
-	if e.Source == "" {
-		return errors.New("no source to embed")
-	}
-	//TODO: update embedding here
 	return nil
 }
 
@@ -149,11 +166,11 @@ func (eb *EmbeddingsBase) SyncEmbeddings(kb KnowledeBaseProvider) error {
 	var err error
 	changed := false
 	for _, fact := range kb.ListFacts() {
-		emb, ok := eb.EmbeddingsByFactId[fact.Name]
+		emb, ok := eb.embeddingsByFactName[fact.Name]
 		if ok {
 			if emb.Source != fact.Question && fact.Question != "" {
 				emb.Source = fact.Question
-				err = emb.UpdateVector()
+				err = emb.UpdateEmbedding(eb.openaiHandler)
 				changed = true
 				if err != nil {
 					return err
@@ -161,7 +178,7 @@ func (eb *EmbeddingsBase) SyncEmbeddings(kb KnowledeBaseProvider) error {
 			}
 			if len(emb.Embedding) == 0 || emb.NumDimensions == 0 || len(emb.Embedding) != emb.NumDimensions {
 				emb.Source = fact.Question
-				err = emb.UpdateVector()
+				err = emb.UpdateEmbedding(eb.openaiHandler)
 				changed = true
 				if err != nil {
 					return err
@@ -169,8 +186,8 @@ func (eb *EmbeddingsBase) SyncEmbeddings(kb KnowledeBaseProvider) error {
 			}
 		} else {
 			if fact.Question != "" {
-				eb.EmbeddingsByFactId[fact.Name] = NewEmbedding(fact.Name, fact.Question, "", GPT_CURRENT_MODEL)
-				err = eb.EmbeddingsByFactId[fact.Name].UpdateVector()
+				eb.embeddingsByFactName[fact.Name] = NewEmbedding(fact.Name, fact.Question, "", GPT_CURRENT_MODEL)
+				err = eb.embeddingsByFactName[fact.Name].UpdateEmbedding(eb.openaiHandler)
 				changed = true
 				if err != nil {
 					return err
@@ -178,14 +195,14 @@ func (eb *EmbeddingsBase) SyncEmbeddings(kb KnowledeBaseProvider) error {
 			}
 		}
 	}
-	for factId, _ := range eb.EmbeddingsByFactId {
-		if !kb.HasFact(factId) {
-			delete(eb.EmbeddingsByFactId, factId)
+	for factName, _ := range eb.embeddingsByFactName {
+		if !kb.HasFact(factName) {
+			delete(eb.embeddingsByFactName, factName)
 			changed = true
 		}
 	}
 	if changed {
-		err = eb.StoreToDisk()
+		err = eb.Save()
 		if err != nil {
 			return err
 		}
@@ -195,10 +212,10 @@ func (eb *EmbeddingsBase) SyncEmbeddings(kb KnowledeBaseProvider) error {
 
 func (eb *EmbeddingsBase) RankEmbeddings(q *Embedding) (*EmbeddingsRanking, error) {
 	er := &EmbeddingsRanking{
-		Embeddings: make([]*Embedding, len(eb.EmbeddingsByFactId)),
+		Embeddings: make([]*Embedding, len(eb.embeddingsByFactName)),
 		Query:      q,
 	}
-	if len(eb.EmbeddingsByFactId) == 0 {
+	if len(eb.embeddingsByFactName) == 0 {
 		return er, errors.New("no embeddings")
 	}
 	if q.Source == "" {
@@ -209,7 +226,7 @@ func (eb *EmbeddingsBase) RankEmbeddings(q *Embedding) (*EmbeddingsRanking, erro
 	}
 	idx := 0
 	var err error
-	for _, e := range eb.EmbeddingsByFactId {
+	for _, e := range eb.embeddingsByFactName {
 		er.Embeddings[idx] = e.Clone()
 		er.Embeddings[idx].Relevance, err = er.Embeddings[idx].DotProd(q)
 		if err != nil {

@@ -8,11 +8,13 @@ import (
 
 type StatefulAnswerProvider struct {
 	kb KnowledeBaseProvider
+	eb EmbeddingsBaseProvider
 }
 
-func NewStatefulAnswerProvider(kb KnowledeBaseProvider) AnswerProvider {
+func NewStatefulAnswerProvider(kb KnowledeBaseProvider, eb EmbeddingsBaseProvider) AnswerProvider {
 	answerProvider := StatefulAnswerProvider{
 		kb,
+		eb,
 	}
 	return &answerProvider
 }

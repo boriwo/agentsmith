@@ -18,6 +18,10 @@ const (
 	GPT_ROLE_SYSTEM                  = "system"
 	GPT_TEMPERATURE                  = 0.5
 	GTP_ENCODING_FLOAT               = "float"
+	GPT_IMAGE_SIZE                   = "1024x1024"
+	OPEN_AI_COMPLETIONS_URL          = "https://api.openai.com/v1/chat/completions"
+	OPEN_AI_EMBEDDINGS_URL           = "https://api.openai.com/v1/embeddings"
+	OPEN_AI_IMAGES_URL               = "https://api.openai.com/v1/images/generations"
 )
 
 type GptError struct {
@@ -101,7 +105,42 @@ type GptImageResponse struct {
 	Error *GptError `json:"error"`
 }
 
-func gptGetCompletions(secretProvider SecretProvider, question *Question) []*Answer {
+type OpenAIHandler struct {
+	secretProvider SecretProvider
+}
+
+func NewOpenAIHandler(secretProvider SecretProvider) *OpenAIHandler {
+	return &OpenAIHandler{
+		secretProvider: secretProvider,
+	}
+}
+
+func (h *OpenAIHandler) getHttp(url string, reqObj interface{}) ([]byte, error) {
+	buf, err := json.MarshalIndent(reqObj, "", "\t")
+	if err != nil {
+		return nil, err
+	}
+	client := http.Client{}
+	req, err := http.NewRequest("POST", url, bytes.NewReader(buf))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer "+h.secretProvider.GetSecret("openai"))
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	//fmt.Printf("%s\n", string(body))
+	return body, nil
+}
+
+func (h *OpenAIHandler) GptGetCompletions(question *Question) []*Answer {
 	a := new(Answer)
 	reqObj := GptCompletionsRequest{
 		Model: GPT_CURRENT_MODEL,
@@ -112,32 +151,11 @@ func gptGetCompletions(secretProvider SecretProvider, question *Question) []*Ans
 			},
 		},
 	}
-	buf, err := json.MarshalIndent(reqObj, "", "\t")
+	body, err := h.getHttp(OPEN_AI_COMPLETIONS_URL, reqObj)
 	if err != nil {
 		a.Text = fmt.Sprintf("gpt completions error: %s", err.Error())
 		return []*Answer{a}
 	}
-	url := "https://api.openai.com/v1/chat/completions"
-	client := http.Client{}
-	req, err := http.NewRequest("POST", url, bytes.NewReader(buf))
-	if err != nil {
-		a.Text = fmt.Sprintf("gpt completions error: %s", err.Error())
-		return []*Answer{a}
-	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer "+secretProvider.GetSecret("openai"))
-	resp, err := client.Do(req)
-	if err != nil {
-		a.Text = fmt.Sprintf("gpt completions error: %s", err.Error())
-		return []*Answer{a}
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		a.Text = fmt.Sprintf("gpt completions error: %s", err.Error())
-		return []*Answer{a}
-	}
-	//fmt.Printf("%s\n", string(body))
 	var respObj GptCompletionsResponse
 	err = json.Unmarshal(body, &respObj)
 	if err != nil {
@@ -162,34 +180,13 @@ func gptGetCompletions(secretProvider SecretProvider, question *Question) []*Ans
 	return answers
 }
 
-func gptGetEmbedding(secretProvider SecretProvider, question *Question) (*Embedding, error) {
+func (h *OpenAIHandler) GptGetEmbedding(question *Question) (*Embedding, error) {
 	reqObj := GptEmbeddingRequest{
 		Input:          question.Text,
 		Model:          GPT_MODEL_TEXT_EMBEDDING_ADA_002,
 		EncodingFormat: GTP_ENCODING_FLOAT,
 	}
-	buf, err := json.MarshalIndent(reqObj, "", "\t")
-	if err != nil {
-		return nil, err
-	}
-	url := "https://api.openai.com/v1/embeddings"
-	client := http.Client{}
-	req, err := http.NewRequest("POST", url, bytes.NewReader(buf))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer "+secretProvider.GetSecret("openai"))
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	//fmt.Printf("%s\n", string(body))
+	body, err := h.getHttp(OPEN_AI_EMBEDDINGS_URL, reqObj)
 	var respObj GptEmbeddingResponse
 	err = json.Unmarshal(body, &respObj)
 	if err != nil {
@@ -204,40 +201,19 @@ func gptGetEmbedding(secretProvider SecretProvider, question *Question) (*Embedd
 	return NewEmbedding("", question.Text, "", GPT_CURRENT_MODEL).WithEmbedding(respObj.Data[0].Embedding), nil
 }
 
-func gptGetImage(secretProvider SecretProvider, question string) []*Answer {
+func (h *OpenAIHandler) GptGetImage(question *Question) []*Answer {
 	a := new(Answer)
 	reqObj := GptImageRequest{
 		GPT_MODEL_DALL_E_3,
-		question,
+		question.Text,
 		1,
-		"1024x1024",
+		GPT_IMAGE_SIZE,
 	}
-	buf, err := json.MarshalIndent(reqObj, "", "\t")
+	body, err := h.getHttp(OPEN_AI_IMAGES_URL, reqObj)
 	if err != nil {
 		a.Text = fmt.Sprintf("gpt image error: %s", err.Error())
 		return []*Answer{a}
 	}
-	url := "https://api.openai.com/v1/images/generations"
-	client := http.Client{}
-	req, err := http.NewRequest("POST", url, bytes.NewReader(buf))
-	if err != nil {
-		a.Text = fmt.Sprintf("gpt image error: %s", err.Error())
-		return []*Answer{a}
-	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer "+secretProvider.GetSecret("openai"))
-	resp, err := client.Do(req)
-	if err != nil {
-		a.Text = fmt.Sprintf("gpt image error: %s", err.Error())
-		return []*Answer{a}
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		a.Text = fmt.Sprintf("gpt image error: %s", err.Error())
-		return []*Answer{a}
-	}
-	fmt.Printf("%s\n", string(body))
 	var respObj GptImageResponse
 	err = json.Unmarshal(body, &respObj)
 	if err != nil {
