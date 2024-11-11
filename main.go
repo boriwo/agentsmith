@@ -35,7 +35,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("faild to synchronize embeddings base: %v", err)
 	}
-	answerProvider := NewStatefulAnswerProvider(kb, eb)
+	answerProvider := NewUberAnswerProvider(kb, eb, *openaiHandler)
 	agent = NewSlackAgent(secretProvider, answerProvider, sessionMgr)
 	agent.LaunchAgent()
 }

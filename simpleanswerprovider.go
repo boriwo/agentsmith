@@ -12,7 +12,7 @@ func NewSimpleAnswerProvider() AnswerProvider {
 	return new(SimpleAnswerProvider)
 }
 
-func (sap *SimpleAnswerProvider) GetAnswers(session *UserSession, question *Question) []*Answer {
+func (sap *SimpleAnswerProvider) GetAnswers(session *UserSession, question *Question) ([]*Answer, error) {
 	answer := new(Answer)
 	if strings.Contains(question.Text, "hello") || strings.Contains(question.Text, "hi") {
 		answer.Text = fmt.Sprintf("Hello %s", session.User.RealName)
@@ -24,6 +24,5 @@ func (sap *SimpleAnswerProvider) GetAnswers(session *UserSession, question *Ques
 	answers := []*Answer{answer}
 	session.LastQuestion = question
 	session.LastAnswer = answers
-	session.State = STATE_QA
-	return answers
+	return answers, nil
 }

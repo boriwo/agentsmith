@@ -10,17 +10,22 @@ type (
 		Name     string `json:"name"`
 		RealName string `json:"realName"`
 	}
+	Parameter struct {
+		Name             string `json:"name"`
+		Value            string `json:"value"`
+		Type             string `json:"type"`
+		ExtractionPrompt string `json:"prompt"`
+	}
 	Fact struct {
-		Name           string   `json:"name"`
-		Question       string   `json:"question"`       // quality text for generating embeddings
-		Labels         []string `json:"labels"`         // keywords for question
-		Answers        []string `json:"answers"`        // list of text based answers
-		Links          []string `json:"links"`          // list of http links
-		Plugin         string   `json:"plugin"`         // optional plugin action
-		ParamSignature []string `json:"paramSignature"` // optional list of parameters to be found in question to be passed to plugin
-		ParamPrompt    string   `json:"paramPrompt"`    // optional prompt for extracting parameter key value pairs to be passed to plugin
-		CreatedBy      string   `json:"createdBy"`
-		CreatedAt      string   `json:"createdAt"`
+		Name      string      `json:"name"`
+		Question  string      `json:"question"` // quality text for generating embeddings
+		Labels    []string    `json:"labels"`   // keywords for question
+		Answers   []string    `json:"answers"`  // list of text based answers
+		Links     []string    `json:"links"`    // list of http links
+		Plugin    string      `json:"plugin"`   // optional plugin action
+		Params    []Parameter `json:"params"`   // optional list of plugin params
+		CreatedBy string      `json:"createdBy"`
+		CreatedAt string      `json:"createdAt"`
 	}
 	Question struct {
 		Text string
@@ -66,7 +71,7 @@ type Agent interface {
 }
 
 type AnswerProvider interface {
-	GetAnswers(session *UserSession, question *Question) []*Answer
+	GetAnswers(session *UserSession, question *Question) ([]*Answer, error)
 }
 
 type KnowledeBaseProvider interface {

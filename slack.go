@@ -54,7 +54,7 @@ func (sa *SlackAgent) LaunchAgent() {
 					socketClient.Ack(*event.Request)
 					err := sa.handleEventMessage(apiEvent, client)
 					if err != nil {
-						log.Fatal(err)
+						log.Printf("%s\n", err.Error())
 					}
 				}
 			}
@@ -90,14 +90,24 @@ func (sa *SlackAgent) handleAppMentionEventToBot(event *slackevents.AppMentionEv
 	user := NewUser(slackUser.ID, slackUser.Name, slackUser.RealName)
 	session := sa.sessionMgr.GetSession(user)
 	question := NewQuestion(event.Text)
-	answers := sa.answerProvider.GetAnswers(session, question)
-	for _, a := range answers {
+	answers, err := sa.answerProvider.GetAnswers(session, question)
+	if err != nil {
 		attachment := slack.Attachment{}
-		attachment.Text = a.Text
-		attachment.Color = "#4af030"
+		attachment.Text = err.Error()
+		attachment.Color = "#4a3030"
 		_, _, err = client.PostMessage(event.Channel, slack.MsgOptionAttachments(attachment))
 		if err != nil {
 			return fmt.Errorf("failed to post message: %w", err)
+		}
+	} else {
+		for _, a := range answers {
+			attachment := slack.Attachment{}
+			attachment.Text = a.Text
+			attachment.Color = "#4af030"
+			_, _, err = client.PostMessage(event.Channel, slack.MsgOptionAttachments(attachment))
+			if err != nil {
+				return fmt.Errorf("failed to post message: %w", err)
+			}
 		}
 	}
 	return nil

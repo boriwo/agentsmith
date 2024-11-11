@@ -72,9 +72,9 @@ func (e1 *Embedding) DotProd(e2 *Embedding) (float64, error) {
 	if len(e1.Embedding) == 0 {
 		return 0, errors.New("empty vectors")
 	}
-	if e1.ModelId != e2.ModelId {
+	/*if e1.ModelId != e2.ModelId {
 		return 0, errors.New("different models")
-	}
+	}*/
 	p := float64(0.0)
 	for idx, val := range e1.Embedding {
 		p += val * e2.Embedding[idx]
