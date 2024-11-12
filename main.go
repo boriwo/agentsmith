@@ -9,10 +9,6 @@ const (
 	DEFAULT_EMBEDDING_BASE_NAME = "embeddings"
 )
 
-var (
-	agent Agent
-)
-
 func main() {
 	var err error
 	sessionMgr := NewSimpleSessionManager()
@@ -36,6 +32,8 @@ func main() {
 		log.Fatalf("faild to synchronize embeddings base: %v", err)
 	}
 	answerProvider := NewUberAnswerProvider(kb, eb, *openaiHandler)
-	agent = NewSlackAgent(secretProvider, answerProvider, sessionMgr)
-	agent.LaunchAgent()
+	slackAgent := NewSlackAgent(secretProvider, answerProvider, sessionMgr)
+	go slackAgent.LaunchAgent()
+	webAgent := NewWebAgent(secretProvider, answerProvider, sessionMgr)
+	webAgent.LaunchAgent()
 }

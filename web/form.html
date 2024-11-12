@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Smith</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h3>Question</h3>
+    <form action="/agentsmith" method="post">
+        <label for="question">enter your question here:</label>
+        <p><input type="text" id="question" name="question" value="{{.Question}}" required/></p>
+        <input type="hidden" id="sessionId" name="sessionId" value="{{.SessionId}}"/>
+        <p><input type="submit" value="Ask"/></pp>
+    </form>
+    <h3>{{.AnswerTitle}}</h3>
+    <p>{{.Answer}}</p>
+</body>
+</html>

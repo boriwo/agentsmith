@@ -19,7 +19,7 @@ type SlackAgent struct {
 	sessionMgr     SessionManager
 }
 
-func NewSlackAgent(secretProvider SecretProvider, answerProvider AnswerProvider, sessionManager SessionManager) *SlackAgent {
+func NewSlackAgent(secretProvider SecretProvider, answerProvider AnswerProvider, sessionManager SessionManager) Agent {
 	sa := SlackAgent{
 		secretProvider: secretProvider,
 		answerProvider: answerProvider,

@@ -181,6 +181,9 @@ func (h *OpenAIHandler) GptGetEmbedding(question *Question) (*Embedding, error) 
 		EncodingFormat: GTP_ENCODING_FLOAT,
 	}
 	body, err := h.getHttp(OPEN_AI_EMBEDDINGS_URL, reqObj)
+	if err != nil {
+		return nil, err
+	}
 	var respObj GptEmbeddingResponse
 	err = json.Unmarshal(body, &respObj)
 	if err != nil {

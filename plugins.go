@@ -4,6 +4,7 @@ import "errors"
 
 const (
 	COMMAND_PLUGIN      = "COMMAND_PLUGIN"
+	IMAGE_PLUGIN        = "IMAGE_PLUGIN"
 	PARAM_TYPE_CONSTANT = "constant"
 )
 
@@ -22,6 +23,7 @@ func NewPluginManger(kb KnowledeBaseProvider, eb EmbeddingsBaseProvider, oai Ope
 		make(map[string]AnswerProvider),
 	}
 	mgr.plugins[COMMAND_PLUGIN] = NewCommandAnswerProvider(kb, eb)
+	mgr.plugins[IMAGE_PLUGIN] = NewImageAnswerProvider(oai)
 	return mgr
 }
 
@@ -37,15 +39,18 @@ func (pm *PluginManager) GetAnswers(session *UserSession, question *Question, fa
 		return nil, errors.New("unknown plugin " + fact.Plugin)
 	}
 	// rewrite question
-	q := ""
-	for idx, param := range fact.Params {
-		if param.Type == PARAM_TYPE_CONSTANT {
-			q += param.Value
-			if idx < len(fact.Params)-1 {
-				q += " "
+	q := question.Text
+	if len(fact.Params) > 0 {
+		q = ""
+		for idx, param := range fact.Params {
+			if param.Type == PARAM_TYPE_CONSTANT {
+				q += param.Value
+				if idx < len(fact.Params)-1 {
+					q += " "
+				}
+			} else {
+				return nil, errors.New("unsupported param type " + param.Type)
 			}
-		} else {
-			return nil, errors.New("unsupported param type " + param.Type)
 		}
 	}
 	return answerProvider.GetAnswers(session, &Question{q})

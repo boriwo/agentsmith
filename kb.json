@@ -1,5 +1,14 @@
 [
     {
+        "name": "IMAGE_GENERATOR",
+        "question": "Generate or draw an image of something!",
+        "labels": [ "image" ],
+        "answers": [],
+        "links": [],
+        "plugin": "IMAGE_PLUGIN",
+        "createdBy": "boris"
+    },
+    {
         "name": "RLISTFACTS",
         "question": "List all facts in the knowledge base!",
         "labels": [ "rlistfacts" ],
