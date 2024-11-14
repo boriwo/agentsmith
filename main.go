@@ -35,5 +35,7 @@ func main() {
 	slackAgent := NewSlackAgent(secretProvider, answerProvider, sessionMgr)
 	go slackAgent.LaunchAgent()
 	webAgent := NewWebAgent(secretProvider, answerProvider, sessionMgr)
-	webAgent.LaunchAgent()
+	go webAgent.LaunchAgent()
+	cliAgent := NewCliAgent(secretProvider, answerProvider, sessionMgr)
+	cliAgent.LaunchAgent()
 }
