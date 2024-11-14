@@ -16,5 +16,11 @@
     </form>
     <h3>{{.AnswerTitle}}</h3>
     <p>{{.Answer}}</p>
+    {{ if ne .AnswerImage "" }}
+    <p><img src="{{.AnswerImage}}"/></p>
+    {{ end }}
+    {{ if ne .AnswerLink "" }}
+    <p><a href="{{.AnswerLink}}">{{.AnswerLink}}</a></p>
+    {{ end }}
 </body>
 </html>

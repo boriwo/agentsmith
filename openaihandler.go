@@ -221,6 +221,6 @@ func (h *OpenAIHandler) GptGetImage(question *Question) ([]*Answer, error) {
 	if len(respObj.Data) == 0 {
 		return nil, errors.New("no image for you")
 	}
-	a.Text = respObj.Data[0].URL
+	a.ImageLink = respObj.Data[0].URL
 	return []*Answer{a}, nil
 }

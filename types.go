@@ -24,6 +24,7 @@ type (
 		Links     []string    `json:"links"`    // list of http links
 		Plugin    string      `json:"plugin"`   // optional plugin action
 		Params    []Parameter `json:"params"`   // optional list of plugin params
+		IsSystem  bool        `json:"isSystem"` // if true referring to a built in system command
 		CreatedBy string      `json:"createdBy"`
 		CreatedAt string      `json:"createdAt"`
 	}
@@ -31,9 +32,11 @@ type (
 		Text string
 	}
 	Answer struct {
-		Text  string
-		Score float64
-		Rank  int
+		Text      string
+		Link      string
+		ImageLink string
+		Score     float64
+		Rank      int
 	}
 	UserSession struct {
 		User         *User
@@ -55,6 +58,16 @@ func NewAnswer(answer string) *Answer {
 		Text: answer,
 	}
 	return &a
+}
+
+func (a *Answer) WithLink(link string) *Answer {
+	a.Link = link
+	return a
+}
+
+func (a *Answer) WithImageLink(link string) *Answer {
+	a.ImageLink = link
+	return a
 }
 
 func NewUser(id, name, realname string) *User {

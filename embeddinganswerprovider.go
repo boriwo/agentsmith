@@ -50,7 +50,7 @@ func (sap *EmbeddingAnswerProvider) GetAnswers(session *UserSession, question *Q
 		plausabilityPrompt += "Question:\n" + question.Text + "\n"
 		plausabilityPrompt += "Answer:\n"
 		for _, a := range fact.Answers {
-			answers = append(answers, &Answer{a, 0, 0})
+			answers = append(answers, &Answer{a, "", "", 0, 0})
 			plausabilityPrompt += a + "\n"
 		}
 		plausabilityAnswers, err := sap.oai.GptGetCompletions(&Question{plausabilityPrompt})

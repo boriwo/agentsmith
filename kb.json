@@ -21,6 +21,7 @@
                 "value": "rlistfacts"
             }
         ],
+        "isSystem": true,
         "createdBy": "boris"
     },
     {
@@ -36,6 +37,7 @@
                 "value": "rnumfacts"
             }
         ],
+        "isSystem": true,
         "createdBy": "boris"
     },
     {
@@ -51,6 +53,7 @@
                 "value": "rgetfact"
             }
         ],
+        "isSystem": true,
         "createdBy": "boris"
     },
     {

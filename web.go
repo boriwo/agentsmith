@@ -46,6 +46,8 @@ func (wa *WebAgent) getHandler(w http.ResponseWriter, r *http.Request) {
 		"Question":    "",
 		"Answer":      "",
 		"AnswerTitle": "",
+		"AnswerLink":  "",
+		"AnswerImage": "",
 		"SessionId":   sessionId,
 	}
 	tmpl, err := template.ParseFiles("web/form.html")
@@ -85,11 +87,15 @@ func (wa *WebAgent) postHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]string{
 		"Question":    question,
 		"Answer":      "",
+		"AnswerLink":  "",
+		"AnswerImage": "",
 		"AnswerTitle": "Answer",
 		"SessionId":   sessionId,
 	}
 	for _, a := range answers {
 		data["Answer"] += a.Text
+		data["AnswerLink"] += a.Link
+		data["AnswerImage"] += a.ImageLink
 	}
 	tmpl, err := template.ParseFiles("web/form.html")
 	if err != nil {
