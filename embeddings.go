@@ -1,3 +1,19 @@
+/**
+ * Copyright 2024 Boris Wolf
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package main
 
 import (
@@ -6,18 +22,21 @@ import (
 	"log"
 	"math"
 	"os"
+	"path/filepath"
 	"sort"
 )
 
 type EmbeddingsBaseProvider interface {
 	Save() error
 	Load() error
+	GetName() string
 	SyncEmbeddings(kb KnowledeBaseProvider) error
 	RankEmbeddings(q *Embedding) (*EmbeddingsRanking, error)
 }
 
-type EmbeddingsBase struct {
+type FileEmbeddingsBase struct {
 	name                 string
+	filePath             string
 	embeddingsByFactName map[string]*Embedding
 	secretProvider       SecretProvider
 	openaiHandler        OpenAIHandler
@@ -53,13 +72,15 @@ func (e *Embedding) WithEmbedding(vector []float64) *Embedding {
 	return e
 }
 
-func NewEmbeddingBase(secretProvider SecretProvider, openaiHandler OpenAIHandler, name string) EmbeddingsBaseProvider {
-	return &EmbeddingsBase{
+func NewFileEmbeddingBase(secretProvider SecretProvider, openaiHandler OpenAIHandler, name string) EmbeddingsBaseProvider {
+	eb := &FileEmbeddingsBase{
 		embeddingsByFactName: make(map[string]*Embedding),
 		secretProvider:       secretProvider,
 		openaiHandler:        openaiHandler,
 		name:                 name,
 	}
+	eb.filePath = filepath.Join("kb", "embeddings", eb.name+".json")
+	return eb
 }
 
 func (e1 *Embedding) DotProd(e2 *Embedding) (float64, error) {
@@ -117,7 +138,11 @@ func (e *Embedding) Clone() *Embedding {
 	}
 }
 
-func (eb *EmbeddingsBase) Save() error {
+func (eb *FileEmbeddingsBase) GetName() string {
+	return eb.name
+}
+
+func (eb *FileEmbeddingsBase) Save() error {
 	a := make([]*Embedding, len(eb.embeddingsByFactName))
 	idx := 0
 	for _, e := range eb.embeddingsByFactName {
@@ -135,15 +160,15 @@ func (eb *EmbeddingsBase) Save() error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(eb.name+".json", buf, 0644)
+	err = os.WriteFile(eb.filePath, buf, 0644)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (eb *EmbeddingsBase) Load() error {
-	data, err := os.ReadFile(eb.name + ".json")
+func (eb *FileEmbeddingsBase) Load() error {
+	data, err := os.ReadFile(eb.filePath)
 	if err != nil {
 		return err
 	}
@@ -162,8 +187,11 @@ func (eb *EmbeddingsBase) Load() error {
 	return nil
 }
 
-func (eb *EmbeddingsBase) SyncEmbeddings(kb KnowledeBaseProvider) error {
+func (eb *FileEmbeddingsBase) SyncEmbeddings(kb KnowledeBaseProvider) error {
 	var err error
+	if kb == nil {
+		return errors.New("no knowedge base")
+	}
 	changed := false
 	for _, fact := range kb.ListFacts() {
 		emb, ok := eb.embeddingsByFactName[fact.Name]
@@ -210,7 +238,7 @@ func (eb *EmbeddingsBase) SyncEmbeddings(kb KnowledeBaseProvider) error {
 	return nil
 }
 
-func (eb *EmbeddingsBase) RankEmbeddings(q *Embedding) (*EmbeddingsRanking, error) {
+func (eb *FileEmbeddingsBase) RankEmbeddings(q *Embedding) (*EmbeddingsRanking, error) {
 	er := &EmbeddingsRanking{
 		Embeddings: make([]*Embedding, len(eb.embeddingsByFactName)),
 		Query:      q,

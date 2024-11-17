@@ -21,13 +21,15 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sync"
 )
 
 type FileKnowledgeBase struct {
 	sync.Mutex
-	name  string
-	facts map[string]*Fact
+	name     string
+	filePath string
+	facts    map[string]*Fact
 }
 
 func NewFileKnowledgeBase(name string) KnowledeBaseProvider {
@@ -35,13 +37,14 @@ func NewFileKnowledgeBase(name string) KnowledeBaseProvider {
 		name:  name,
 		facts: make(map[string]*Fact, 0),
 	}
+	kb.filePath = filepath.Join("kb", "facts", kb.name+".json")
 	return &kb
 }
 
 func (fkb *FileKnowledgeBase) Load() error {
 	fkb.Lock()
 	defer fkb.Unlock()
-	jsonData, err := os.ReadFile(fkb.name + ".json")
+	jsonData, err := os.ReadFile(fkb.filePath)
 	if err != nil {
 		return err
 	}
@@ -68,7 +71,7 @@ func (fkb *FileKnowledgeBase) Save() error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(fkb.name+".json", jsonData, 0644)
+	err = os.WriteFile(fkb.filePath, jsonData, 0644)
 	if err != nil {
 		return err
 	}

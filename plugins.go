@@ -25,20 +25,18 @@ const (
 )
 
 type PluginManager struct {
-	kb      KnowledeBaseProvider
-	eb      EmbeddingsBaseProvider
+	kbm     *KnowledeBaseManager
 	oai     OpenAIHandler
 	plugins map[string]AnswerProvider
 }
 
-func NewPluginManger(kb KnowledeBaseProvider, eb EmbeddingsBaseProvider, oai OpenAIHandler) *PluginManager {
+func NewPluginManger(kbm *KnowledeBaseManager, oai OpenAIHandler) *PluginManager {
 	mgr := &PluginManager{
-		kb,
-		eb,
+		kbm,
 		oai,
 		make(map[string]AnswerProvider),
 	}
-	mgr.plugins[COMMAND_PLUGIN] = NewCommandAnswerProvider(kb, eb)
+	mgr.plugins[COMMAND_PLUGIN] = NewCommandAnswerProvider(kbm)
 	mgr.plugins[IMAGE_PLUGIN] = NewImageAnswerProvider(oai)
 	return mgr
 }

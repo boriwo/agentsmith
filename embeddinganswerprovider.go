@@ -22,18 +22,16 @@ import (
 )
 
 type EmbeddingAnswerProvider struct {
-	kb  KnowledeBaseProvider
-	eb  EmbeddingsBaseProvider
+	kbm *KnowledeBaseManager
 	oai OpenAIHandler
 	pm  *PluginManager
 }
 
-func NewEmbeddingAnswerProvider(kb KnowledeBaseProvider, eb EmbeddingsBaseProvider, oai OpenAIHandler) AnswerProvider {
+func NewEmbeddingAnswerProvider(kbm *KnowledeBaseManager, oai OpenAIHandler) AnswerProvider {
 	answerProvider := EmbeddingAnswerProvider{
-		kb,
-		eb,
+		kbm,
 		oai,
-		NewPluginManger(kb, eb, oai),
+		NewPluginManger(kbm, oai),
 	}
 	return &answerProvider
 }
@@ -44,14 +42,14 @@ func (sap *EmbeddingAnswerProvider) GetAnswers(session *UserSession, question *Q
 	if err != nil {
 		return nil, err
 	}
-	ranking, err := sap.eb.RankEmbeddings(embedding)
+	ranking, err := sap.kbm.GetCurrentEmbeddingsBase().RankEmbeddings(embedding)
 	if err != nil {
 		return nil, err
 	}
 	if len(ranking.Embeddings) == 0 {
 		return nil, errors.New("no matching fact")
 	}
-	fact := sap.kb.GetFact(ranking.Embeddings[0].FactName)
+	fact := sap.kbm.GetCurrentKnowledgeBase().GetFact(ranking.Embeddings[0].FactName)
 	if fact == nil {
 		return nil, errors.New("no matching fact")
 	}

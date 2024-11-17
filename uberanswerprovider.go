@@ -17,21 +17,19 @@
 package main
 
 type UberAnswerProvider struct {
-	kb          KnowledeBaseProvider
-	eb          EmbeddingsBaseProvider
+	kbm         *KnowledeBaseManager
 	oai         OpenAIHandler
 	answerChain []AnswerProvider
 }
 
-func NewUberAnswerProvider(kb KnowledeBaseProvider, eb EmbeddingsBaseProvider, oai OpenAIHandler) AnswerProvider {
+func NewUberAnswerProvider(kbm *KnowledeBaseManager, oai OpenAIHandler) AnswerProvider {
 	answerProvider := UberAnswerProvider{
-		kb,
-		eb,
+		kbm,
 		oai,
 		[]AnswerProvider{},
 	}
-	answerProvider.answerChain = append(answerProvider.answerChain, NewCommandAnswerProvider(kb, eb))
-	answerProvider.answerChain = append(answerProvider.answerChain, NewEmbeddingAnswerProvider(kb, eb, oai))
+	answerProvider.answerChain = append(answerProvider.answerChain, NewCommandAnswerProvider(kbm))
+	answerProvider.answerChain = append(answerProvider.answerChain, NewEmbeddingAnswerProvider(kbm, oai))
 	answerProvider.answerChain = append(answerProvider.answerChain, NewSimpleAnswerProvider())
 	return &answerProvider
 }

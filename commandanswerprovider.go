@@ -30,14 +30,12 @@ const (
 )
 
 type CommandAnswerProvider struct {
-	kb KnowledeBaseProvider
-	eb EmbeddingsBaseProvider
+	kbm *KnowledeBaseManager
 }
 
-func NewCommandAnswerProvider(kb KnowledeBaseProvider, eb EmbeddingsBaseProvider) AnswerProvider {
+func NewCommandAnswerProvider(kbm *KnowledeBaseManager) AnswerProvider {
 	answerProvider := CommandAnswerProvider{
-		kb,
-		eb,
+		kbm,
 	}
 	return &answerProvider
 }
@@ -50,18 +48,18 @@ func (sap *CommandAnswerProvider) GetAnswers(session *UserSession, question *Que
 		tokens = tokens[1:]
 	}
 	if len(tokens) > 0 && tokens[0] == R_LIST_FACTS {
-		for _, f := range sap.kb.ListFacts() {
+		for _, f := range sap.kbm.GetCurrentKnowledgeBase().ListFacts() {
 			answer.Text += f.Name + "\n"
 		}
 		answers = append(answers, answer)
 	} else if len(tokens) > 0 && tokens[0] == R_NUM_FACTS {
-		answer.Text += fmt.Sprintf("%d", sap.kb.GetNumFacts())
+		answer.Text += fmt.Sprintf("%d", sap.kbm.GetCurrentKnowledgeBase().GetNumFacts())
 		answers = append(answers, answer)
 	} else if len(tokens) > 0 && tokens[0] == R_GET_FACT {
 		if len(tokens) < 2 {
 			return nil, errors.New("missing parameter fact name")
 		}
-		fact := sap.kb.GetFact(tokens[1])
+		fact := sap.kbm.GetCurrentKnowledgeBase().GetFact(tokens[1])
 		if fact == nil {
 			return nil, errors.New("no fact by that name")
 		} else {
