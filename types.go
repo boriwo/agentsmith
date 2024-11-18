@@ -110,7 +110,21 @@ type KnowledeBaseProvider interface {
 	GetFact(name string) *Fact
 	GetNumFacts() int
 	HasFact(name string) bool
-	AddFact(*Fact) error
-	DeleteFAct(name string) error
+	AddFact(fact *Fact) error
+	DeleteFact(name string) error
 	ListFacts() []*Fact
+}
+
+type EmbeddingsBaseProvider interface {
+	Save() error
+	Load() error
+	GetName() string
+	SyncEmbeddings(kb KnowledeBaseProvider) error
+	RankEmbeddings(q *Embedding) (*EmbeddingsRanking, error)
+	GetEmbedding(name string) *Embedding
+	GetNumEmbeddings() int
+	HasEmbedding(name string) bool
+	AddEmbedding(embedding *Embedding) error
+	DeleteEmbedding(name string) error
+	ListEmbeddings() []*Embedding
 }

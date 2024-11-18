@@ -19,22 +19,17 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"math"
 	"os"
 	"path/filepath"
 	"sort"
+	"sync"
 )
 
-type EmbeddingsBaseProvider interface {
-	Save() error
-	Load() error
-	GetName() string
-	SyncEmbeddings(kb KnowledeBaseProvider) error
-	RankEmbeddings(q *Embedding) (*EmbeddingsRanking, error)
-}
-
 type FileEmbeddingsBase struct {
+	sync.Mutex
 	name                 string
 	filePath             string
 	embeddingsByFactName map[string]*Embedding
@@ -143,6 +138,8 @@ func (eb *FileEmbeddingsBase) GetName() string {
 }
 
 func (eb *FileEmbeddingsBase) Save() error {
+	eb.Lock()
+	defer eb.Unlock()
 	a := make([]*Embedding, len(eb.embeddingsByFactName))
 	idx := 0
 	for _, e := range eb.embeddingsByFactName {
@@ -168,6 +165,8 @@ func (eb *FileEmbeddingsBase) Save() error {
 }
 
 func (eb *FileEmbeddingsBase) Load() error {
+	eb.Lock()
+	defer eb.Unlock()
 	data, err := os.ReadFile(eb.filePath)
 	if err != nil {
 		return err
@@ -188,6 +187,8 @@ func (eb *FileEmbeddingsBase) Load() error {
 }
 
 func (eb *FileEmbeddingsBase) SyncEmbeddings(kb KnowledeBaseProvider) error {
+	eb.Lock()
+	defer eb.Unlock()
 	var err error
 	if kb == nil {
 		return errors.New("no knowedge base")
@@ -239,6 +240,8 @@ func (eb *FileEmbeddingsBase) SyncEmbeddings(kb KnowledeBaseProvider) error {
 }
 
 func (eb *FileEmbeddingsBase) RankEmbeddings(q *Embedding) (*EmbeddingsRanking, error) {
+	eb.Lock()
+	defer eb.Unlock()
 	er := &EmbeddingsRanking{
 		Embeddings: make([]*Embedding, len(eb.embeddingsByFactName)),
 		Query:      q,
@@ -278,4 +281,54 @@ func (eb *FileEmbeddingsBase) RankEmbeddings(q *Embedding) (*EmbeddingsRanking, 
 		}
 	})
 	return er, nil
+}
+
+func (eb *FileEmbeddingsBase) GetEmbedding(name string) *Embedding {
+	eb.Lock()
+	defer eb.Unlock()
+	return eb.embeddingsByFactName[name]
+}
+
+func (eb *FileEmbeddingsBase) GetNumEmbeddings() int {
+	eb.Lock()
+	defer eb.Unlock()
+	return len(eb.embeddingsByFactName)
+}
+
+func (eb *FileEmbeddingsBase) HasEmbedding(name string) bool {
+	eb.Lock()
+	defer eb.Unlock()
+	_, ok := eb.embeddingsByFactName[name]
+	return ok
+}
+
+func (eb *FileEmbeddingsBase) AddEmbedding(embedding *Embedding) error {
+	eb.Lock()
+	defer eb.Unlock()
+	if embedding == nil {
+		return errors.New("no embedding given")
+	}
+	eb.embeddingsByFactName[embedding.FactName] = embedding
+	return nil
+}
+
+func (eb *FileEmbeddingsBase) DeleteEmbedding(name string) error {
+	eb.Lock()
+	defer eb.Unlock()
+	_, ok := eb.embeddingsByFactName[name]
+	if !ok {
+		return fmt.Errorf("no fact with name %s exists", name)
+	}
+	delete(eb.embeddingsByFactName, name)
+	return nil
+}
+
+func (eb *FileEmbeddingsBase) ListEmbeddings() []*Embedding {
+	eb.Lock()
+	defer eb.Unlock()
+	allEmbs := make([]*Embedding, 0)
+	for _, e := range eb.embeddingsByFactName {
+		allEmbs = append(allEmbs, e)
+	}
+	return allEmbs
 }

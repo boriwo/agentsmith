@@ -118,7 +118,7 @@ func (fkb *FileKnowledgeBase) AddFact(fact *Fact) error {
 	return nil
 }
 
-func (fkb *FileKnowledgeBase) DeleteFAct(name string) error {
+func (fkb *FileKnowledgeBase) DeleteFact(name string) error {
 	fkb.Lock()
 	defer fkb.Unlock()
 	_, ok := fkb.facts[name]

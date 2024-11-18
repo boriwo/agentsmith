@@ -6,6 +6,7 @@
         "answers": [],
         "links": [],
         "plugin": "IMAGE_PLUGIN",
+        "isSystem": true,
         "createdBy": "boris"
     },
     {

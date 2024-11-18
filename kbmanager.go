@@ -122,5 +122,31 @@ func (kbm *KnowledeBaseManager) loadAll() error {
 			kbm.embeddingStores[feb.GetName()] = feb
 		}
 	}
+	systemFacts, ok := kbm.factsStores[DEFAULT_KNOWLEDGE_BASE_NAME]
+	if !ok {
+		return errors.New("no system knowledge base")
+	}
+	systemEmbeddings, ok := kbm.embeddingStores[DEFAULT_EMBEDDING_BASE_NAME]
+	if !ok {
+		return errors.New("no system embeddings base")
+	}
+	for _, name := range kbm.ListBaseNames() {
+		if name != DEFAULT_KNOWLEDGE_BASE_NAME {
+			facts, ok := kbm.factsStores[name]
+			if !ok {
+				return errors.New("no knowledge base with name " + name)
+			}
+			for _, fact := range systemFacts.ListFacts() {
+				facts.AddFact(fact)
+			}
+			embeddings, ok := kbm.embeddingStores[name]
+			if !ok {
+				return errors.New("no embedding base with name " + name)
+			}
+			for _, embedding := range systemEmbeddings.ListEmbeddings() {
+				embeddings.AddEmbedding(embedding)
+			}
+		}
+	}
 	return nil
 }
