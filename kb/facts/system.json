@@ -1,0 +1,94 @@
+[
+    {
+        "name": "IMAGE_GENERATOR",
+        "question": "Generate or draw an image of something!",
+        "labels": [ "image" ],
+        "answers": [],
+        "links": [],
+        "plugin": "IMAGE_PLUGIN",
+        "createdBy": "boris"
+    },
+    {
+        "name": "RLISTFACTS",
+        "question": "List all facts in the knowledge base!",
+        "labels": [ "rlistfacts" ],
+        "answers": [],
+        "links": [],
+        "plugin": "COMMAND_PLUGIN",
+        "params": [
+            {
+                "type": "constant",
+                "value": "rlistfacts"
+            }
+        ],
+        "isSystem": true,
+        "createdBy": "boris"
+    },
+    {
+        "name": "RLISTKNOWLEDGEBASES",
+        "question": "List all available knowledge bases!",
+        "labels": [ "rlistknowledgebases" ],
+        "answers": [],
+        "links": [],
+        "plugin": "COMMAND_PLUGIN",
+        "params": [
+            {
+                "type": "constant",
+                "value": "rlistknowledgebases"
+            }
+        ],
+        "isSystem": true,
+        "createdBy": "boris"
+    },
+    {
+        "name": "RGETCURRENTKNOWLEDGEBASE",
+        "question": "Get currently selected knowledge bases!",
+        "labels": [ "rgetcurrentknowledgebase" ],
+        "answers": [],
+        "links": [],
+        "plugin": "COMMAND_PLUGIN",
+        "params": [
+            {
+                "type": "constant",
+                "value": "rgetcurrentknowledgebase"
+            }
+        ],
+        "isSystem": true,
+        "createdBy": "boris"
+    },
+    {
+        "name": "RNUMFACTS",
+        "question": "Get the number of all facts in the knowledge base!",
+        "labels": [ "rnumfacts" ],
+        "answers": [],
+        "links": [],
+        "plugin": "COMMAND_PLUGIN",
+        "params": [
+            {
+                "type": "constant",
+                "value": "rnumfacts"
+            }
+        ],
+        "isSystem": true,
+        "createdBy": "boris"
+    },
+    {
+        "name": "RGETFACT",
+        "question": "Get a fact by name from the knowledge base!",
+        "labels": [ "rgetfact" ],
+        "answers": [],
+        "links": [],
+        "plugin": "COMMAND_PLUGIN",
+        "params": [
+            {
+                "type": "constant",
+                "value": "rgetfact"
+            }
+        ],
+        "isSystem": true,
+        "createdBy": "boris"
+    }
+]
+
+
+

@@ -33,7 +33,7 @@ func main() {
 	}
 	kbMgr, err := NewKnowledgeBaseManager(secretProvider, *openaiHandler)
 	if err != nil {
-		log.Fatalf("faild to load knowledge base: %v", err)
+		log.Fatalf("failed to load knowledge base: %v", err)
 	}
 	answerProvider := NewUberAnswerProvider(kbMgr, *openaiHandler)
 	slackAgent := NewSlackAgent(secretProvider, answerProvider, sessionMgr)

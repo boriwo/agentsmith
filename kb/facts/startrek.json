@@ -1,0 +1,63 @@
+[
+    {
+        "name": "SETTING",
+        "question": "Where does Star Trek take place?",
+        "labels": [ "" ],
+        "answers": [ "The events of Star Trek primarily take place in the 23rd century, a time when humanity has made significant advancements in technology, including faster-than-light travel through warp drive." ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "CULTURAL_IMPACT",
+        "question": "What is the cultural impact of the series?",
+        "labels": [ "" ],
+        "answers": [ "Star Trek has had a profound impact on popular culture and science fiction. It is recognized for its progressive themes, including diversity and social issues, as well as its exploration of ethical dilemmas and philosophical questions. The show has developed a dedicated fan base known as 'Trekkies'." ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "SERIES",
+        "question": "When did the series premiere and who invented it?",
+        "labels": [ "" ],
+        "answers": [ "The Star Trek universe is a vast and influential science fiction franchise that began with the original television series created by Gene Roddenberry, which premiered on September 8, 1966. The series follows the adventures of the crew aboard the starship USS Enterprise, whose mission is 'to explore strange new worlds, to seek out new life and new civilizations, to boldly go where no man has gone before'." ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "FEDERATION",
+        "question": "What is The United Federation of Planets?",
+        "labels": [ "" ],
+        "answers": [ "The United Federation of Planets: A central political entity in the Star Trek universe that represents an alliance of various planets and species dedicated to peace and exploration." ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "VULCANS",
+        "question": "Who are the Vulcans?",
+        "labels": [ "" ],
+        "answers": [ "One of the most notable alien races in Star Trek, characterized by their logical mindset and lack of emotional expression. They play a significant role in the series' lore, particularly through Spock's characte." ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "CHARACTER",
+        "question": "Who are notable characters?",
+        "labels": [ "" ],
+        "answers": [ 
+            "Captain James T. Kirk (William Shatner) - The charismatic captain of the USS Enterprise.",
+            "Mr. Spock (Leonard Nimoy) - A half-human, half-Vulcan science officer known for his logical thinking.",
+            "Dr. Leonard 'Bones' McCoy (DeForest Kelley) - The ship's chief medical officer, known for his emotional and often cantankerous demeanor.",
+            "Other notable crew members include Lieutenant Uhura, Mr. Sulu, Ensign Chekov, and Chief Engineer Scott." 
+        ],
+        "links": [],
+        "createdBy": "boris"
+    },
+    {
+        "name": "ICONIC_PHRASES",
+        "question": "What are some iconic phrases?",
+        "labels": [ "" ],
+        "answers": [ "Phrases such as 'Live long and prosper,' associated with Spock's Vulcan salute, have become cultural touchstones beyond the series itself." ],
+        "links": [],
+        "createdBy": "boris"
+    }
+]

@@ -24,9 +24,12 @@ import (
 )
 
 const (
-	R_LIST_FACTS = "rlistfacts"
-	R_NUM_FACTS  = "rnumfacts"
-	R_GET_FACT   = "rgetfact"
+	R_LIST_FACTS                 = "rlistfacts"
+	R_LIST_KNOWLEDGE_BASES       = "rlistknowledgebases"
+	R_NUM_FACTS                  = "rnumfacts"
+	R_GET_FACT                   = "rgetfact"
+	R_GET_CURRENT_KNOWLEDGE_BASE = "rgetcurrentknowledgebase"
+	R_SET_CURRENT_KNOWLEDGE_BASE = "rsetcurrentknowledgebase"
 )
 
 type CommandAnswerProvider struct {
@@ -51,6 +54,24 @@ func (sap *CommandAnswerProvider) GetAnswers(session *UserSession, question *Que
 		for _, f := range sap.kbm.GetCurrentKnowledgeBase().ListFacts() {
 			answer.Text += f.Name + "\n"
 		}
+		answers = append(answers, answer)
+	} else if len(tokens) > 0 && tokens[0] == R_LIST_KNOWLEDGE_BASES {
+		for _, name := range sap.kbm.ListBaseNames() {
+			answer.Text += name + "\n"
+		}
+		answers = append(answers, answer)
+	} else if len(tokens) > 0 && tokens[0] == R_GET_CURRENT_KNOWLEDGE_BASE {
+		answer.Text += sap.kbm.GetCurrentBaseName() + "\n"
+		answers = append(answers, answer)
+	} else if len(tokens) > 0 && tokens[0] == R_SET_CURRENT_KNOWLEDGE_BASE {
+		if len(tokens) < 2 {
+			return nil, errors.New("missing parameter knowledge base name")
+		}
+		err := sap.kbm.SetCurrentBaseName(tokens[1])
+		if err != nil {
+			return nil, err
+		}
+		answer.Text += "set current knowledge base to " + tokens[1] + "\n"
 		answers = append(answers, answer)
 	} else if len(tokens) > 0 && tokens[0] == R_NUM_FACTS {
 		answer.Text += fmt.Sprintf("%d", sap.kbm.GetCurrentKnowledgeBase().GetNumFacts())
