@@ -57,6 +57,26 @@
         "createdBy": "boris"
     },
     {
+        "name": "RSETCURRENTKNOWLEDGEBASE",
+        "question": "Select new knowledge base!",
+        "labels": [ "rsetcurrentknowledgebase" ],
+        "answers": [],
+        "links": [],
+        "plugin": "COMMAND_PLUGIN",
+        "params": [
+            {
+                "type": "constant",
+                "value": "rsetcurrentknowledgebase"
+            },
+            {
+                "type": "prompt",
+                "value": "Extract the name of the desired knowledge base from the following question and return it as simple string for further automated processing. Question: "
+            }
+        ],
+        "isSystem": true,
+        "createdBy": "boris"
+    },
+    {
         "name": "RNUMFACTS",
         "question": "Get the number of all facts in the knowledge base!",
         "labels": [ "rnumfacts" ],

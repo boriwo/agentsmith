@@ -71,7 +71,7 @@ func (sap *EmbeddingAnswerProvider) GetAnswers(session *UserSession, question *Q
 		if err != nil {
 			return nil, err
 		}
-		// answer deemed no plausible
+		// answer deemed not plausible
 		if len(plausabilityAnswers) == 1 && strings.ToLower(plausabilityAnswers[0].Text) == "no" {
 			answers = make([]*Answer, 0)
 		}

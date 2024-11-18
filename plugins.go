@@ -16,12 +16,15 @@
 
 package main
 
-import "errors"
+import (
+	"errors"
+)
 
 const (
 	COMMAND_PLUGIN      = "COMMAND_PLUGIN"
 	IMAGE_PLUGIN        = "IMAGE_PLUGIN"
 	PARAM_TYPE_CONSTANT = "constant"
+	PARAM_TYPE_PROMPT   = "prompt"
 )
 
 type PluginManager struct {
@@ -61,6 +64,17 @@ func (pm *PluginManager) GetAnswers(session *UserSession, question *Question, fa
 				q += param.Value
 				if idx < len(fact.Params)-1 {
 					q += " "
+				}
+			} else if param.Type == PARAM_TYPE_PROMPT {
+				answers, err := pm.oai.GptGetCompletions(&Question{param.Value + " " + question.Text})
+				if err != nil {
+					return nil, err
+				}
+				if len(answers) > 0 {
+					q += answers[0].Text
+					if idx < len(fact.Params)-1 {
+						q += " "
+					}
 				}
 			} else {
 				return nil, errors.New("unsupported param type " + param.Type)
