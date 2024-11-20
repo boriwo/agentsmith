@@ -19,16 +19,15 @@ Q: list availabe knowledge bases
 ```
 
 ```
-startrek 
-starwars
+A: startrek, starwars
 ```
 
 ```
-Q: select knwoeldge base startrek
+Q: select knowledge base startrek
 ```
 
 ```
-set current knowledge base to startrek
+A: set current knowledge base to startrek
 ```
 
 ```
@@ -36,7 +35,7 @@ Q: who are some of the main characters?
 ```
 
 ```
-The following are notable characters of the original series:Captain James T. Kirk (William Shatner) - The charismatic captain of the USS Enterprise.Mr. Spock (Leonard Nimoy) - A half-human, half-Vulcan science officer known for his logical thinking.Dr. Leonard 'Bones' McCoy (DeForest Kelley) - The ship's chief medical officer, known for his emotional and often cantankerous demeanor.Other notable crew members include Lieutenant Uhura, Mr. Sulu, Ensign Chekov, and Chief Engineer Scott.
+A: The following are notable characters of the original series:Captain James T. Kirk (William Shatner) - The charismatic captain of the USS Enterprise.Mr. Spock (Leonard Nimoy) - A half-human, half-Vulcan science officer known for his logical thinking.Dr. Leonard 'Bones' McCoy (DeForest Kelley) - The ship's chief medical officer, known for his emotional and often cantankerous demeanor.Other notable crew members include Lieutenant Uhura, Mr. Sulu, Ensign Chekov, and Chief Engineer Scott.
 ```
 
 ```
@@ -44,7 +43,7 @@ Q: now select starwars as your knowledge base!
 ```
 
 ```
-set current knowledge base to starwars
+A: set current knowledge base to starwars
 ```
 
 ```
@@ -52,13 +51,8 @@ Q: please list some of the characters!
 ```
 
 ```
-Key characters include Luke Skywalker, Princess Leia, Han Solo, Darth Vader, Yoda, and Obi-Wan Kenobi.
+A: Key characters include Luke Skywalker, Princess Leia, Han Solo, Darth Vader, Yoda, and Obi-Wan Kenobi.
 ```
-
-## resources
-
-* https://www.bacancytechnology.com/blog/develop-slack-bot-using-golang
-* https://platform.openai.com
 
 
 
