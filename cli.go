@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 )
 
 type CliAgent struct {
@@ -40,8 +41,9 @@ func NewCliAgent(secretProvider SecretProvider, answerProvider AnswerProvider, s
 	return &cli
 }
 
-func (wa *CliAgent) LaunchAgent() {
+func (wa *CliAgent) LaunchAgent(wg sync.WaitGroup) {
 	sessionId := ""
+	log.Println("launching cli agent")
 	fmt.Println("enter a question!")
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
@@ -75,6 +77,8 @@ func (wa *CliAgent) LaunchAgent() {
 			}
 		}
 	}
+	log.Println("stopping cli agent")
+	wg.Done()
 }
 
 func (wa *CliAgent) generateRandomString(n int) string {

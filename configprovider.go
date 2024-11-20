@@ -23,20 +23,20 @@ import (
 	"sync"
 )
 
-type SecretProvider interface {
-	GetSecret(name string) string
+type ConfigProvider interface {
+	GetConfig(name string) string
 }
 
-type JSONSecretProvider struct {
+type JSONConfigProvider struct {
 	filePath string
-	secrets  map[string]string
+	configs  map[string]string
 	mu       sync.RWMutex
 }
 
-func NewJSONSecretProvider(filePath string) (SecretProvider, error) {
-	provider := &JSONSecretProvider{
+func NewJSONConfigProvider(filePath string) (ConfigProvider, error) {
+	provider := &JSONConfigProvider{
 		filePath: filePath,
-		secrets:  make(map[string]string),
+		configs:  make(map[string]string),
 	}
 	err := provider.loadSecrets()
 	if err != nil {
@@ -45,22 +45,22 @@ func NewJSONSecretProvider(filePath string) (SecretProvider, error) {
 	return provider, nil
 }
 
-func (sp *JSONSecretProvider) loadSecrets() error {
-	sp.mu.Lock()
-	defer sp.mu.Unlock()
-	data, err := os.ReadFile(sp.filePath)
+func (cp *JSONConfigProvider) loadSecrets() error {
+	cp.mu.Lock()
+	defer cp.mu.Unlock()
+	data, err := os.ReadFile(cp.filePath)
 	if err != nil {
 		return fmt.Errorf("error reading file: %v", err)
 	}
-	err = json.Unmarshal(data, &sp.secrets)
+	err = json.Unmarshal(data, &cp.configs)
 	if err != nil {
 		return fmt.Errorf("error unmarshaling JSON: %v", err)
 	}
 	return nil
 }
 
-func (sp *JSONSecretProvider) GetSecret(name string) string {
-	sp.mu.RLock()
-	defer sp.mu.RUnlock()
-	return sp.secrets[name]
+func (cp *JSONConfigProvider) GetConfig(name string) string {
+	cp.mu.RLock()
+	defer cp.mu.RUnlock()
+	return cp.configs[name]
 }

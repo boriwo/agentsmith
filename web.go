@@ -22,18 +22,21 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/mux"
 )
 
 type WebAgent struct {
 	secretProvider SecretProvider
+	configProvider ConfigProvider
 	answerProvider AnswerProvider
 	sessionMgr     SessionManager
 }
 
-func NewWebAgent(secretProvider SecretProvider, answerProvider AnswerProvider, sessionManager SessionManager) Agent {
+func NewWebAgent(configProvider ConfigProvider, secretProvider SecretProvider, answerProvider AnswerProvider, sessionManager SessionManager) Agent {
 	wa := WebAgent{
+		configProvider: configProvider,
 		secretProvider: secretProvider,
 		answerProvider: answerProvider,
 		sessionMgr:     sessionManager,
@@ -41,13 +44,16 @@ func NewWebAgent(secretProvider SecretProvider, answerProvider AnswerProvider, s
 	return &wa
 }
 
-func (wa *WebAgent) LaunchAgent() {
+func (wa *WebAgent) LaunchAgent(wg sync.WaitGroup) {
 	r := mux.NewRouter().StrictSlash(true)
 	fs := http.FileServer(http.Dir("./web"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 	r.HandleFunc("/agentsmith", wa.getHandler).Methods("GET")
 	r.HandleFunc("/agentsmith", wa.postHandler).Methods("POST")
-	http.ListenAndServe(wa.secretProvider.GetSecret("webport"), r)
+	log.Println("launching web agent")
+	http.ListenAndServe(wa.configProvider.GetConfig("webport"), r)
+	log.Println("stopping web agent")
+	wg.Done()
 }
 
 func (wa *WebAgent) generateRandomString(n int) string {

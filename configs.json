@@ -1,0 +1,6 @@
+{
+    "webagent" : "yes",
+    "cliagent" : "yes",
+    "slackagent" : "no",
+    "webport" : ":8080"
+}

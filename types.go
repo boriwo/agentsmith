@@ -16,6 +16,8 @@
 
 package main
 
+import "sync"
+
 const (
 	STATE_QA = "STATE_QA"
 )
@@ -96,7 +98,7 @@ func NewUser(id, name, realname string) *User {
 }
 
 type Agent interface {
-	LaunchAgent()
+	LaunchAgent(wg sync.WaitGroup)
 }
 
 type AnswerProvider interface {

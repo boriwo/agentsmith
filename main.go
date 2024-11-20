@@ -18,6 +18,7 @@ package main
 
 import (
 	"log"
+	"sync"
 )
 
 func main() {
@@ -25,21 +26,36 @@ func main() {
 	sessionMgr := NewSimpleSessionManager()
 	secretProvider, err := NewJSONSecretProvider("secrets.json")
 	if err != nil {
-		log.Fatalf("faild to create secret provider: %v", err)
+		log.Fatalf("failed to create secret provider: %v", err)
+	}
+	configProvider, err := NewJSONConfigProvider("configs.json")
+	if err != nil {
+		log.Fatalf("failed to create config provider: %v", err)
 	}
 	openaiHandler := NewOpenAIHandler(secretProvider)
 	if err != nil {
-		log.Fatalf("faild to synchronize embeddings base: %v", err)
+		log.Fatalf("failed to synchronize embeddings base: %v", err)
 	}
 	kbMgr, err := NewKnowledgeBaseManager(secretProvider, *openaiHandler)
 	if err != nil {
 		log.Fatalf("failed to load knowledge base: %v", err)
 	}
 	answerProvider := NewUberAnswerProvider(kbMgr, *openaiHandler)
-	slackAgent := NewSlackAgent(secretProvider, answerProvider, sessionMgr)
-	go slackAgent.LaunchAgent()
-	webAgent := NewWebAgent(secretProvider, answerProvider, sessionMgr)
-	go webAgent.LaunchAgent()
-	cliAgent := NewCliAgent(secretProvider, answerProvider, sessionMgr)
-	cliAgent.LaunchAgent()
+	var wg sync.WaitGroup
+	if configProvider.GetConfig("slackagent") == "yes" {
+		slackAgent := NewSlackAgent(secretProvider, answerProvider, sessionMgr)
+		wg.Add(1)
+		go slackAgent.LaunchAgent(wg)
+	}
+	if configProvider.GetConfig("webagent") == "yes" {
+		webAgent := NewWebAgent(configProvider, secretProvider, answerProvider, sessionMgr)
+		wg.Add(1)
+		go webAgent.LaunchAgent(wg)
+	}
+	if configProvider.GetConfig("cliagent") == "yes" {
+		cliAgent := NewCliAgent(secretProvider, answerProvider, sessionMgr)
+		wg.Add(1)
+		go cliAgent.LaunchAgent(wg)
+	}
+	wg.Wait()
 }

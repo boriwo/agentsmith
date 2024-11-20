@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -44,7 +45,7 @@ func NewSlackAgent(secretProvider SecretProvider, answerProvider AnswerProvider,
 	return &sa
 }
 
-func (sa *SlackAgent) LaunchAgent() {
+func (sa *SlackAgent) LaunchAgent(wg sync.WaitGroup) {
 	sa.client = slack.New(sa.secretProvider.GetSecret("slackOauthToken"), slack.OptionDebug(true), slack.OptionAppLevelToken(sa.secretProvider.GetSecret("slackAppToken")))
 	socketClient := socketmode.New(
 		sa.client,
@@ -77,8 +78,11 @@ func (sa *SlackAgent) LaunchAgent() {
 		}
 	}(ctx, sa.client, socketClient)
 	sa.postAttachment("Bot Message", "agent launched")
+	log.Println("launching slack agent")
 	socketClient.Run()
+	log.Println("stopping slack agent")
 	sa.postAttachment("Bot Message", "agent stopped")
+	wg.Done()
 }
 
 func (sa *SlackAgent) handleEventMessage(event slackevents.EventsAPIEvent, client *slack.Client) error {
