@@ -30,6 +30,8 @@ const (
 	R_GET_FACT                   = "rgetfact"
 	R_GET_CURRENT_KNOWLEDGE_BASE = "rgetcurrentknowledgebase"
 	R_SET_CURRENT_KNOWLEDGE_BASE = "rsetcurrentknowledgebase"
+	R_ADD_FACT                   = "raddfact"
+	R_DELETE_FACT                = "redeletefact"
 )
 
 type CommandAnswerProvider struct {
@@ -88,6 +90,34 @@ func (sap *CommandAnswerProvider) GetAnswers(session *UserSession, question *Que
 			answer.Text = string(buf)
 			answers = append(answers, answer)
 		}
+	} else if len(tokens) > 0 && tokens[0] == R_ADD_FACT {
+		if len(tokens) < 2 {
+			return nil, errors.New("missing parameter fact name")
+		}
+		factName := tokens[1]
+		if sap.kbm.GetCurrentKnowledgeBase().HasFact(factName) {
+			return nil, errors.New("already have fact with name " + factName)
+		}
+		answer.Text += "adding new fact " + factName + ", please state a question for this fact!\n"
+		answers = append(answers, answer)
+		session.NewFact = new(Fact)
+		session.NewFact.Name = strings.ToUpper(factName)
+		session.State = STATE_ADD_QUESTION
+	} else if len(tokens) > 0 && tokens[0] == R_DELETE_FACT {
+		if len(tokens) < 2 {
+			return nil, errors.New("missing parameter fact name")
+		}
+		factName := tokens[1]
+		if !sap.kbm.GetCurrentKnowledgeBase().HasFact(factName) {
+			return nil, errors.New("no fact with name " + factName)
+		}
+		err := sap.kbm.GetCurrentKnowledgeBase().DeleteFact(factName)
+		if err != nil {
+			return nil, err
+		}
+		//TODO: sync embeddings base
+		answer.Text += "deleted fact " + factName + "\n"
+		answers = append(answers, answer)
 	}
 	session.LastQuestion = question
 	session.LastAnswer = answers

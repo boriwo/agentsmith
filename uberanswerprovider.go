@@ -17,9 +17,10 @@
 package main
 
 type UberAnswerProvider struct {
-	kbm         *KnowledeBaseManager
-	oai         OpenAIHandler
-	answerChain []AnswerProvider
+	kbm                 *KnowledeBaseManager
+	oai                 OpenAIHandler
+	answerChain         []AnswerProvider
+	stateAnswerProvider AnswerProvider
 }
 
 func NewUberAnswerProvider(kbm *KnowledeBaseManager, oai OpenAIHandler) AnswerProvider {
@@ -27,6 +28,7 @@ func NewUberAnswerProvider(kbm *KnowledeBaseManager, oai OpenAIHandler) AnswerPr
 		kbm,
 		oai,
 		[]AnswerProvider{},
+		NewStateAnswerProvider(kbm),
 	}
 	answerProvider.answerChain = append(answerProvider.answerChain, NewCommandAnswerProvider(kbm))
 	answerProvider.answerChain = append(answerProvider.answerChain, NewEmbeddingAnswerProvider(kbm, oai))
@@ -36,8 +38,18 @@ func NewUberAnswerProvider(kbm *KnowledeBaseManager, oai OpenAIHandler) AnswerPr
 
 func (sap *UberAnswerProvider) GetAnswers(session *UserSession, question *Question) ([]*Answer, error) {
 	session.LastQuestion = question
-	for _, ap := range sap.answerChain {
-		answers, err := ap.GetAnswers(session, question)
+	if session.State == STATE_QA {
+		for _, ap := range sap.answerChain {
+			answers, err := ap.GetAnswers(session, question)
+			if err != nil {
+				return nil, err
+			}
+			if len(answers) > 0 {
+				return answers, nil
+			}
+		}
+	} else {
+		answers, err := sap.stateAnswerProvider.GetAnswers(session, question)
 		if err != nil {
 			return nil, err
 		}

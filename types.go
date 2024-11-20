@@ -19,7 +19,9 @@ package main
 import "sync"
 
 const (
-	STATE_QA = "STATE_QA"
+	STATE_QA           = "STATE_QA"
+	STATE_ADD_QUESTION = "STATE_ADD_QUESTION"
+	STATE_ADD_ANSWER   = "STATE_ADD_ANSWER"
 )
 
 type (
@@ -61,6 +63,7 @@ type (
 		State        string
 		LastQuestion *Question
 		LastAnswer   []*Answer
+		NewFact      *Fact
 	}
 )
 
