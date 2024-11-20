@@ -1,115 +1,148 @@
 [
-    {
-        "name": "IMAGE_GENERATOR",
-        "question": "Generate or draw an image of something!",
-        "labels": [ "image" ],
-        "answers": [],
-        "links": [],
-        "plugin": "IMAGE_PLUGIN",
-        "isSystem": true,
-        "createdBy": "boris"
-    },
-    {
-        "name": "RLISTFACTS",
-        "question": "List all facts in the knowledge base!",
-        "labels": [ "rlistfacts" ],
-        "answers": [],
-        "links": [],
-        "plugin": "COMMAND_PLUGIN",
-        "params": [
-            {
-                "type": "constant",
-                "value": "rlistfacts"
-            }
-        ],
-        "isSystem": true,
-        "createdBy": "boris"
-    },
-    {
-        "name": "RLISTKNOWLEDGEBASES",
-        "question": "List all available knowledge bases!",
-        "labels": [ "rlistknowledgebases" ],
-        "answers": [],
-        "links": [],
-        "plugin": "COMMAND_PLUGIN",
-        "params": [
-            {
-                "type": "constant",
-                "value": "rlistknowledgebases"
-            }
-        ],
-        "isSystem": true,
-        "createdBy": "boris"
-    },
-    {
-        "name": "RGETCURRENTKNOWLEDGEBASE",
-        "question": "Get currently selected knowledge bases!",
-        "labels": [ "rgetcurrentknowledgebase" ],
-        "answers": [],
-        "links": [],
-        "plugin": "COMMAND_PLUGIN",
-        "params": [
-            {
-                "type": "constant",
-                "value": "rgetcurrentknowledgebase"
-            }
-        ],
-        "isSystem": true,
-        "createdBy": "boris"
-    },
-    {
-        "name": "RSETCURRENTKNOWLEDGEBASE",
-        "question": "Select new knowledge base!",
-        "labels": [ "rsetcurrentknowledgebase" ],
-        "answers": [],
-        "links": [],
-        "plugin": "COMMAND_PLUGIN",
-        "params": [
-            {
-                "type": "constant",
-                "value": "rsetcurrentknowledgebase"
-            },
-            {
-                "type": "prompt",
-                "value": "Extract the name of the desired knowledge base from the following question and return it as simple string for further automated processing. Question: "
-            }
-        ],
-        "isSystem": true,
-        "createdBy": "boris"
-    },
-    {
-        "name": "RNUMFACTS",
-        "question": "Get the number of all facts in the knowledge base!",
-        "labels": [ "rnumfacts" ],
-        "answers": [],
-        "links": [],
-        "plugin": "COMMAND_PLUGIN",
-        "params": [
-            {
-                "type": "constant",
-                "value": "rnumfacts"
-            }
-        ],
-        "isSystem": true,
-        "createdBy": "boris"
-    },
-    {
-        "name": "RGETFACT",
-        "question": "Get a fact by name from the knowledge base!",
-        "labels": [ "rgetfact" ],
-        "answers": [],
-        "links": [],
-        "plugin": "COMMAND_PLUGIN",
-        "params": [
-            {
-                "type": "constant",
-                "value": "rgetfact"
-            }
-        ],
-        "isSystem": true,
-        "createdBy": "boris"
-    }
+	{
+		"name": "RLISTKNOWLEDGEBASES",
+		"question": "List all available knowledge bases!",
+		"labels": [
+			"rlistknowledgebases"
+		],
+		"answers": [],
+		"links": [],
+		"plugin": "COMMAND_PLUGIN",
+		"params": [
+			{
+				"name": "",
+				"value": "rlistknowledgebases",
+				"type": "constant",
+				"prompt": ""
+			}
+		],
+		"isSystem": true,
+		"createdBy": "boris",
+		"createdAt": ""
+	},
+	{
+		"name": "RGETCURRENTKNOWLEDGEBASE",
+		"question": "Get currently selected knowledge bases!",
+		"labels": [
+			"rgetcurrentknowledgebase"
+		],
+		"answers": [],
+		"links": [],
+		"plugin": "COMMAND_PLUGIN",
+		"params": [
+			{
+				"name": "",
+				"value": "rgetcurrentknowledgebase",
+				"type": "constant",
+				"prompt": ""
+			}
+		],
+		"isSystem": true,
+		"createdBy": "boris",
+		"createdAt": ""
+	},
+	{
+		"name": "RSETCURRENTKNOWLEDGEBASE",
+		"question": "Select new knowledge base!",
+		"labels": [
+			"rsetcurrentknowledgebase"
+		],
+		"answers": [],
+		"links": [],
+		"plugin": "COMMAND_PLUGIN",
+		"params": [
+			{
+				"name": "",
+				"value": "rsetcurrentknowledgebase",
+				"type": "constant",
+				"prompt": ""
+			},
+			{
+				"name": "",
+				"value": "Extract the name of the desired knowledge base from the following question and return it as simple string for further automated processing. Question: ",
+				"type": "prompt",
+				"prompt": ""
+			}
+		],
+		"isSystem": true,
+		"createdBy": "boris",
+		"createdAt": ""
+	},
+	{
+		"name": "RNUMFACTS",
+		"question": "Get the number of all facts in the knowledge base!",
+		"labels": [
+			"rnumfacts"
+		],
+		"answers": [],
+		"links": [],
+		"plugin": "COMMAND_PLUGIN",
+		"params": [
+			{
+				"name": "",
+				"value": "rnumfacts",
+				"type": "constant",
+				"prompt": ""
+			}
+		],
+		"isSystem": true,
+		"createdBy": "boris",
+		"createdAt": ""
+	},
+	{
+		"name": "RGETFACT",
+		"question": "Get a fact by name from the knowledge base!",
+		"labels": [
+			"rgetfact"
+		],
+		"answers": [],
+		"links": [],
+		"plugin": "COMMAND_PLUGIN",
+		"params": [
+			{
+				"name": "",
+				"value": "rgetfact",
+				"type": "constant",
+				"prompt": ""
+			}
+		],
+		"isSystem": true,
+		"createdBy": "boris",
+		"createdAt": ""
+	},
+	{
+		"name": "IMAGE_GENERATOR",
+		"question": "Generate or draw an image of something!",
+		"labels": [
+			"image"
+		],
+		"answers": [],
+		"links": [],
+		"plugin": "IMAGE_PLUGIN",
+		"params": null,
+		"isSystem": true,
+		"createdBy": "boris",
+		"createdAt": ""
+	},
+	{
+		"name": "RLISTFACTS",
+		"question": "List all facts in the knowledge base!",
+		"labels": [
+			"rlistfacts"
+		],
+		"answers": [],
+		"links": [],
+		"plugin": "COMMAND_PLUGIN",
+		"params": [
+			{
+				"name": "",
+				"value": "rlistfacts",
+				"type": "constant",
+				"prompt": ""
+			}
+		],
+		"isSystem": true,
+		"createdBy": "boris",
+		"createdAt": ""
+	}
 ]
-
-
-

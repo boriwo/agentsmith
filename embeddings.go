@@ -187,8 +187,6 @@ func (eb *FileEmbeddingsBase) Load() error {
 }
 
 func (eb *FileEmbeddingsBase) SyncEmbeddings(kb KnowledeBaseProvider) error {
-	eb.Lock()
-	defer eb.Unlock()
 	var err error
 	if kb == nil {
 		return errors.New("no knowedge base")

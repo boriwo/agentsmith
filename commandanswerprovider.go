@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 const (
@@ -31,7 +32,7 @@ const (
 	R_GET_CURRENT_KNOWLEDGE_BASE = "rgetcurrentknowledgebase"
 	R_SET_CURRENT_KNOWLEDGE_BASE = "rsetcurrentknowledgebase"
 	R_ADD_FACT                   = "raddfact"
-	R_DELETE_FACT                = "redeletefact"
+	R_DELETE_FACT                = "rdeletefact"
 )
 
 type CommandAnswerProvider struct {
@@ -102,6 +103,8 @@ func (sap *CommandAnswerProvider) GetAnswers(session *UserSession, question *Que
 		answers = append(answers, answer)
 		session.NewFact = new(Fact)
 		session.NewFact.Name = strings.ToUpper(factName)
+		session.NewFact.CreatedBy = session.User.Name
+		session.NewFact.CreatedAt = fmt.Sprint(time.Now().Format(time.RFC3339))
 		session.State = STATE_ADD_QUESTION
 	} else if len(tokens) > 0 && tokens[0] == R_DELETE_FACT {
 		if len(tokens) < 2 {
@@ -115,9 +118,14 @@ func (sap *CommandAnswerProvider) GetAnswers(session *UserSession, question *Que
 		if err != nil {
 			return nil, err
 		}
-		//TODO: sync embeddings base
-		answer.Text += "deleted fact " + factName + "\n"
-		answers = append(answers, answer)
+		err = sap.kbm.GetCurrentEmbeddingsBase().SyncEmbeddings(sap.kbm.GetCurrentKnowledgeBase())
+		if err != nil {
+			return nil, err
+		}
+		err = sap.kbm.GetCurrentKnowledgeBase().Save()
+		if err != nil {
+			return nil, err
+		}
 	}
 	session.LastQuestion = question
 	session.LastAnswer = answers

@@ -36,17 +36,35 @@ func (sap *StateAnswerProvider) GetAnswers(session *UserSession, question *Quest
 		answers = append(answers, answer)
 		session.State = STATE_ADD_ANSWER
 	} else if session.State == STATE_ADD_ANSWER {
-		session.NewFact.Answers = []string{question.Text}
-		err := sap.kbm.GetCurrentKnowledgeBase().AddFact(session.NewFact)
-		if err != nil {
-			answer.Text += "failed to add new fact " + session.NewFact.Name + " to knowledge base: " + err.Error() + "\n"
-			answers = append(answers, answer)
+		if question.Text == "done" {
+			err := sap.kbm.GetCurrentKnowledgeBase().AddFact(session.NewFact)
+			if err != nil {
+				answer.Text += "failed to add new fact " + session.NewFact.Name + " to knowledge base: " + err.Error() + "\n"
+				answers = append(answers, answer)
+			} else {
+				err = sap.kbm.GetCurrentEmbeddingsBase().SyncEmbeddings(sap.kbm.GetCurrentKnowledgeBase())
+				if err != nil {
+					answer.Text += "failed to sync embeddings for new fact " + session.NewFact.Name + " for knowledge base: " + err.Error() + "\n"
+					answers = append(answers, answer)
+				}
+				err = sap.kbm.GetCurrentKnowledgeBase().Save()
+				if err != nil {
+					answer.Text += "failed to save knwoledge base for new fact " + session.NewFact.Name + " for knowledge base: " + err.Error() + "\n"
+					answers = append(answers, answer)
+				} else {
+					answer.Text += "added new fact " + session.NewFact.Name + " to knowledge base!\n"
+					answers = append(answers, answer)
+				}
+			}
+			session.State = STATE_QA
 		} else {
-			//TODO: sync embeddings base
-			answer.Text += "added new fact " + session.NewFact.Name + " to knowledge base!\n"
+			if session.NewFact.Answers == nil {
+				session.NewFact.Answers = []string{}
+			}
+			session.NewFact.Answers = append(session.NewFact.Answers, question.Text)
+			answer.Text += "please provide another answer to this question or type 'done' to finish and add fact!\n"
 			answers = append(answers, answer)
 		}
-		session.State = STATE_QA
 	} else {
 		answer.Text += "unknown state " + session.State + ", reverting to default question/answer state\n"
 		answers = append(answers, answer)
