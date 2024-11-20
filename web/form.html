@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    {{ if ne .Error "" }}
+    <h3>Error</h3>
+    <p>{{.Error}}</p>
+    {{ end }}
     <h3>Question</h3>
     <form action="/agentsmith" method="post">
         <label for="question">enter your question here:</label>
@@ -14,6 +18,10 @@
         <input type="hidden" id="sessionId" name="sessionId" value="{{.SessionId}}"/>
         <p><input type="submit" value="Ask"/></pp>
     </form>
+    {{ if ne .LastQuestion "" }}
+    <h3>Question</h3>
+    <p>{{.LastQuestion}}</p>
+    {{ end }}
     <h3>{{.AnswerTitle}}</h3>
     <p>{{.Answer}}</p>
     {{ if ne .AnswerImage "" }}

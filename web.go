@@ -65,12 +65,14 @@ func (wa *WebAgent) generateRandomString(n int) string {
 func (wa *WebAgent) getHandler(w http.ResponseWriter, r *http.Request) {
 	sessionId := wa.generateRandomString(12)
 	data := map[string]string{
-		"Question":    "",
-		"Answer":      "",
-		"AnswerTitle": "",
-		"AnswerLink":  "",
-		"AnswerImage": "",
-		"SessionId":   sessionId,
+		"Question":     "",
+		"LastQuestion": "",
+		"Answer":       "",
+		"AnswerTitle":  "",
+		"AnswerLink":   "",
+		"AnswerImage":  "",
+		"SessionId":    sessionId,
+		"Error":        "",
 	}
 	tmpl, err := template.ParseFiles("web/form.html")
 	if err != nil {
@@ -100,24 +102,28 @@ func (wa *WebAgent) postHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	user := NewUser(sessionId, "WebUser", "WebUser")
 	session := wa.sessionMgr.GetSession(user)
+	data := map[string]string{
+		"Question":     "",
+		"Answer":       "",
+		"AnswerLink":   "",
+		"AnswerImage":  "",
+		"AnswerTitle":  "Answer",
+		"SessionId":    sessionId,
+		"LastQuestion": "",
+		"Error":        "",
+	}
 	answers, err := wa.answerProvider.GetAnswers(session, &Question{question})
 	if err != nil {
-		log.Println(err)
-		w.Write([]byte(err.Error()))
-		return
+		data["Error"] = err.Error()
+	} else {
+		for _, a := range answers {
+			data["Answer"] += a.Text
+			data["AnswerLink"] += a.Link
+			data["AnswerImage"] += a.ImageLink
+		}
 	}
-	data := map[string]string{
-		"Question":    question,
-		"Answer":      "",
-		"AnswerLink":  "",
-		"AnswerImage": "",
-		"AnswerTitle": "Answer",
-		"SessionId":   sessionId,
-	}
-	for _, a := range answers {
-		data["Answer"] += a.Text
-		data["AnswerLink"] += a.Link
-		data["AnswerImage"] += a.ImageLink
+	if session.LastQuestion != nil {
+		data["LastQuestion"] = session.LastQuestion.Text
 	}
 	tmpl, err := template.ParseFiles("web/form.html")
 	if err != nil {
