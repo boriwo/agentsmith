@@ -20,11 +20,11 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"html/template"
-	"log"
 	"net/http"
 	"sync"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog/log"
 )
 
 type WebAgent struct {
@@ -50,9 +50,9 @@ func (wa *WebAgent) LaunchAgent(wg sync.WaitGroup) {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 	r.HandleFunc("/agentsmith", wa.getHandler).Methods("GET")
 	r.HandleFunc("/agentsmith", wa.postHandler).Methods("POST")
-	log.Println("launching web agent")
+	log.Info().Msg("launching web agent")
 	http.ListenAndServe(wa.configProvider.GetConfig("webport"), r)
-	log.Println("stopping web agent")
+	log.Info().Msg("stopping web agent")
 	wg.Done()
 }
 
@@ -76,13 +76,13 @@ func (wa *WebAgent) getHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	tmpl, err := template.ParseFiles("web/form.html")
 	if err != nil {
-		log.Println(err)
+		log.Error().Err(err)
 		w.Write([]byte(err.Error()))
 		return
 	}
 	err = tmpl.Execute(w, data)
 	if err != nil {
-		log.Println(err)
+		log.Error().Err(err)
 		w.Write([]byte(err.Error()))
 		return
 	}
@@ -91,7 +91,7 @@ func (wa *WebAgent) getHandler(w http.ResponseWriter, r *http.Request) {
 func (wa *WebAgent) postHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		log.Println(err)
+		log.Error().Err(err)
 		w.Write([]byte(err.Error()))
 		return
 	}
@@ -127,13 +127,13 @@ func (wa *WebAgent) postHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	tmpl, err := template.ParseFiles("web/form.html")
 	if err != nil {
-		log.Println(err)
+		log.Error().Err(err)
 		w.Write([]byte(err.Error()))
 		return
 	}
 	err = tmpl.Execute(w, data)
 	if err != nil {
-		log.Println(err)
+		log.Error().Err(err)
 		w.Write([]byte(err.Error()))
 		return
 	}

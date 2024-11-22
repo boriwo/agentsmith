@@ -21,9 +21,10 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"os"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
 type CliAgent struct {
@@ -43,7 +44,7 @@ func NewCliAgent(secretProvider SecretProvider, answerProvider AnswerProvider, s
 
 func (wa *CliAgent) LaunchAgent(wg sync.WaitGroup) {
 	sessionId := ""
-	log.Println("launching cli agent")
+	log.Info().Msg("launching cli agent")
 	fmt.Println("enter a question!")
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
@@ -62,7 +63,7 @@ func (wa *CliAgent) LaunchAgent(wg sync.WaitGroup) {
 		session := wa.sessionMgr.GetSession(user)
 		answers, err := wa.answerProvider.GetAnswers(session, &Question{question})
 		if err != nil {
-			log.Println(err)
+			log.Error().Err(err)
 			return
 		}
 		for _, a := range answers {
@@ -77,7 +78,7 @@ func (wa *CliAgent) LaunchAgent(wg sync.WaitGroup) {
 			}
 		}
 	}
-	log.Println("stopping cli agent")
+	log.Info().Msg("stopping cli agent")
 	wg.Done()
 }
 

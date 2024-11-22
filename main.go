@@ -17,28 +17,41 @@
 package main
 
 import (
-	"log"
+	"os"
 	"sync"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
 	var err error
+	log.Logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
 	sessionMgr := NewSimpleSessionManager()
 	secretProvider, err := NewJSONSecretProvider("secrets.json")
 	if err != nil {
-		log.Fatalf("failed to create secret provider: %v", err)
+		log.Error().Err(err).Msg("failed to create secret provider")
 	}
 	configProvider, err := NewJSONConfigProvider("configs.json")
 	if err != nil {
-		log.Fatalf("failed to create config provider: %v", err)
+		log.Error().Err(err).Msg("failed to create config provider")
+	}
+	if configProvider.GetConfig("loglevel") == "error" {
+		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	} else if configProvider.GetConfig("loglevel") == "warn" {
+		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	} else if configProvider.GetConfig("loglevel") == "debug" {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 	openaiHandler := NewOpenAIHandler(secretProvider)
 	if err != nil {
-		log.Fatalf("failed to synchronize embeddings base: %v", err)
+		log.Error().Err(err).Msg("failed to synchronize embeddings base")
 	}
 	kbMgr, err := NewKnowledgeBaseManager(secretProvider, *openaiHandler)
 	if err != nil {
-		log.Fatalf("failed to load knowledge base: %v", err)
+		log.Error().Err(err).Msg("failed to load knowledge base")
 	}
 	answerProvider := NewUberAnswerProvider(kbMgr, *openaiHandler)
 	var wg sync.WaitGroup

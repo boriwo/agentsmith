@@ -1,6 +1,7 @@
 {
     "webagent" : "yes",
-    "cliagent" : "yes",
+    "cliagent" : "no",
     "slackagent" : "no",
-    "webport" : ":8080"
+    "webport" : ":8080",
+    "loglevel" : "info"
 }

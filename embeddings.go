@@ -20,12 +20,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"math"
 	"os"
 	"path/filepath"
 	"sort"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
 type FileEmbeddingsBase struct {
@@ -110,7 +111,7 @@ func (e *Embedding) UpdateEmbedding(openaiHandler OpenAIHandler) error {
 	if e.Source == "" {
 		return errors.New("no source to embed")
 	}
-	log.Printf("updating embedding: %s\n", e.Source)
+	log.Info().Str("fact", e.FactName).Msg("updating embedding")
 	newEmbedding, err := openaiHandler.GptGetEmbedding(&Question{e.Source})
 	if err != nil {
 		return err

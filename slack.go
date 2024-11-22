@@ -20,10 +20,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
-	"os"
 	"sync"
 
+	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
@@ -50,7 +49,7 @@ func (sa *SlackAgent) LaunchAgent(wg sync.WaitGroup) {
 	socketClient := socketmode.New(
 		sa.client,
 		socketmode.OptionDebug(true),
-		socketmode.OptionLog(log.New(os.Stdout, "socketmode: ", log.Lshortfile|log.LstdFlags)),
+		//socketmode.OptionLog(log.Logger),
 	)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -58,7 +57,7 @@ func (sa *SlackAgent) LaunchAgent(wg sync.WaitGroup) {
 		for {
 			select {
 			case <-ctx.Done():
-				log.Println("Shutting down socketmode listener")
+				log.Info().Msg("Shutting down socketmode listener")
 				return
 			case event := <-socketClient.Events:
 				switch event.Type {
@@ -78,9 +77,9 @@ func (sa *SlackAgent) LaunchAgent(wg sync.WaitGroup) {
 		}
 	}(ctx, sa.client, socketClient)
 	sa.postAttachment("Bot Message", "agent launched")
-	log.Println("launching slack agent")
+	log.Info().Msg("launching slack agent")
 	socketClient.Run()
-	log.Println("stopping slack agent")
+	log.Info().Msg("stopping slack agent")
 	sa.postAttachment("Bot Message", "agent stopped")
 	wg.Done()
 }
