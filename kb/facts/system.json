@@ -104,6 +104,66 @@
 				"value": "rgetfact",
 				"type": "constant",
 				"prompt": ""
+			},
+			{
+				"name": "",
+				"value": "Extract the name of the fact from the following question and return it as simple string for further automated processing. Question: ",
+				"type": "prompt",
+				"prompt": ""
+			}
+		],
+		"isSystem": true,
+		"createdBy": "boris",
+		"createdAt": ""
+	},
+	{
+		"name": "RADDFACT",
+		"question": "Add a fact by name to the knowledge base!",
+		"labels": [
+			"raddfact"
+		],
+		"answers": [],
+		"links": [],
+		"plugin": "COMMAND_PLUGIN",
+		"params": [
+			{
+				"name": "",
+				"value": "raddfact",
+				"type": "constant",
+				"prompt": ""
+			},
+			{
+				"name": "",
+				"value": "Extract the name of the fact from the following question and return it as simple string for further automated processing. Question: ",
+				"type": "prompt",
+				"prompt": ""
+			}
+		],
+		"isSystem": true,
+		"createdBy": "boris",
+		"createdAt": ""
+	},
+	{
+		"name": "RDELETEFACT",
+		"question": "Delete a fact by name from the knowledge base!",
+		"labels": [
+			"rdeletefact"
+		],
+		"answers": [],
+		"links": [],
+		"plugin": "COMMAND_PLUGIN",
+		"params": [
+			{
+				"name": "",
+				"value": "rdeletefact",
+				"type": "constant",
+				"prompt": ""
+			},
+			{
+				"name": "",
+				"value": "Extract the name of the fact from the following question and return it as simple string for further automated processing. Question: ",
+				"type": "prompt",
+				"prompt": ""
 			}
 		],
 		"isSystem": true,
