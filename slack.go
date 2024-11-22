@@ -28,6 +28,12 @@ import (
 	"github.com/slack-go/slack/socketmode"
 )
 
+const (
+	SLACK_OAUTH_TOKEN = "slackOauthToken"
+	SLACK_APP_TOKEN   = "slackAppToken"
+	SLACK_CHANNEL_ID  = "slackChannelId"
+)
+
 type SlackAgent struct {
 	client         *slack.Client
 	secretProvider SecretProvider
@@ -45,7 +51,19 @@ func NewSlackAgent(secretProvider SecretProvider, answerProvider AnswerProvider,
 }
 
 func (sa *SlackAgent) LaunchAgent(wg sync.WaitGroup) {
-	sa.client = slack.New(sa.secretProvider.GetSecret("slackOauthToken"), slack.OptionDebug(true), slack.OptionAppLevelToken(sa.secretProvider.GetSecret("slackAppToken")))
+	if sa.secretProvider.GetSecret(SLACK_OAUTH_TOKEN) == "" {
+		log.Error().Msg("missing secret slackOauthToken")
+		return
+	}
+	if sa.secretProvider.GetSecret(SLACK_APP_TOKEN) == "" {
+		log.Error().Msg("missing secret slackAppToken")
+		return
+	}
+	if sa.secretProvider.GetSecret(SLACK_CHANNEL_ID) == "" {
+		log.Error().Msg("missing secret slackChannelId")
+		return
+	}
+	sa.client = slack.New(sa.secretProvider.GetSecret(SLACK_OAUTH_TOKEN), slack.OptionDebug(true), slack.OptionAppLevelToken(sa.secretProvider.GetSecret(SLACK_APP_TOKEN)))
 	socketClient := socketmode.New(
 		sa.client,
 		socketmode.OptionDebug(true),
@@ -166,7 +184,7 @@ func (sa *SlackAgent) postAttachment(pretext, text string) error {
 		},*/
 	}
 	_, _, err := sa.client.PostMessage(
-		sa.secretProvider.GetSecret("slackChannelId"),
+		sa.secretProvider.GetSecret(SLACK_CHANNEL_ID),
 		slack.MsgOptionAttachments(attachment),
 	)
 	if err != nil {

@@ -22,6 +22,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -37,6 +39,7 @@ const (
 	OPEN_AI_COMPLETIONS_URL          = "https://api.openai.com/v1/chat/completions"
 	OPEN_AI_EMBEDDINGS_URL           = "https://api.openai.com/v1/embeddings"
 	OPEN_AI_IMAGES_URL               = "https://api.openai.com/v1/images/generations"
+	OPEN_AI_TOKEN                    = "openai"
 )
 
 type GptError struct {
@@ -131,6 +134,10 @@ func NewOpenAIHandler(secretProvider SecretProvider) *OpenAIHandler {
 }
 
 func (h *OpenAIHandler) getHttp(url string, reqObj interface{}) ([]byte, error) {
+	if h.secretProvider.GetSecret(OPEN_AI_TOKEN) == "" {
+		log.Error().Msg("missing secret openai")
+		return nil, errors.New("missing secret openai")
+	}
 	buf, err := json.MarshalIndent(reqObj, "", "\t")
 	if err != nil {
 		return nil, err
@@ -141,7 +148,7 @@ func (h *OpenAIHandler) getHttp(url string, reqObj interface{}) ([]byte, error) 
 		return nil, err
 	}
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer "+h.secretProvider.GetSecret("openai"))
+	req.Header.Add("Authorization", "Bearer "+h.secretProvider.GetSecret(OPEN_AI_TOKEN))
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
